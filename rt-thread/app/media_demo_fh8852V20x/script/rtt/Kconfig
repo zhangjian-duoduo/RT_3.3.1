@@ -1,0 +1,1505 @@
+config CONFIG_ARCH_FH8636_FH8852V20X
+	bool
+	option env=CONFIG_ARCH_FH8636_FH8852V20X
+
+config EMU
+	bool "emulation enable"
+	default n
+
+menu "APP config"
+	config FH_APP_GRP_ID
+		int "App Group"
+		default 0
+
+	menuconfig FH_APP_OPEN_OVERLAY
+		bool "Open Overlay"
+		default n
+
+		if FH_APP_OPEN_OVERLAY
+			config FH_APP_OVERLAY_LOGO
+				bool "Logo"
+				default n
+
+			config FH_APP_OVERLAY_TOSD
+				bool "Tosd"
+				default y
+	endif
+
+	menuconfig FH_APP_OPEN_VENC
+		bool "Open Venc"
+		default n
+
+	if FH_APP_OPEN_VENC
+		config FH_APP_CHANGE_DSP_RESOLUTION
+			bool "Change DSP Resolution"
+			default n
+
+		config FH_APP_CHANGE_FPS
+			bool "Change FPS"
+			default n
+
+		config FH_APP_CHANGE_ISP_RESOLUTION
+			bool "Change ISP Resolution"
+			default n
+
+		config FH_APP_ROTATE
+			bool "Rotate"
+			default n
+
+		config FH_APP_CAPTURE_JPEG
+			bool "Capture JPEG"
+			default y
+
+		config FH_APP_TOOGLE_FREEZE
+			bool "Toogle Freeze"
+			default n
+
+		config FH_APP_CAPTURE_YUV
+			bool "Capture YUV"
+			default n
+	endif
+
+	menuconfig FH_APP_OPEN_ISP_STRATEGY_DEMO
+		bool "Open Isp strategy demo"
+		default n
+
+	if FH_APP_OPEN_ISP_STRATEGY_DEMO
+		config FH_APP_ISP_MIRROR_FLIP
+			bool "Mirror & Flip"
+			default n
+
+		config FH_APP_CHANGE_AE_MODE
+			bool "AE mode"
+			default n
+
+		config FH_APP_CHANGE_NPMODE
+			bool "N/P Sharpness"
+			default n
+
+		config FH_APP_CHANGE_SATURATION
+			bool "Change Saturation"
+			default n
+
+		config FH_APP_CHANGE_CHROMA
+			bool "Change Chroma"
+			default n
+	endif
+
+	menuconfig FH_APP_OPEN_MOTION_DETECT
+		bool "Open Motion Detect(Full Screen)"
+		default n
+	if FH_APP_OPEN_MOTION_DETECT
+		config FH_APP_OPEN_MOTION_DETECT_DUMP_RESULT
+			select FH_APP_OPEN_OVERLAY
+			bool "Print Detect Result on Serial Port"
+			default n
+	endif
+
+	menuconfig FH_APP_OPEN_RECT_MOTION_DETECT
+		bool "Open Motion Detect(User Configured area)"
+		default n
+	if FH_APP_OPEN_RECT_MOTION_DETECT
+		config FH_APP_OPEN_RECT_MOTION_DETECT_DUMP_RESULT
+			bool "Print Detect Result on Serial Port"
+			default n
+	endif
+
+	menuconfig FH_APP_OPEN_COVER_DETECT
+		bool "Open Cover Detect"
+		default n
+	if FH_APP_OPEN_COVER_DETECT
+		config FH_APP_OPEN_COVER_DETECT_DUMP_RESULT
+			bool "Print Detect Result on Serial Port"
+			default n
+	endif
+
+	menuconfig FH_APP_OPEN_IVS
+		select FH_APP_OPEN_OVERLAY
+		bool "Open Trip & Peri Detect"
+		default n
+
+	if FH_APP_OPEN_IVS
+		config FH_APP_TRIP_NUM
+			int "Trip Num(0 - 2)"
+			default 1
+
+		config FH_APP_PERI_NUM
+			int "Peri Num(0 - 2)"
+			default 1
+	endif
+  	menuconfig FH_NNA_APP_SELECT
+		depends on (NN_ENABLE_G0) ||(NN_ENABLE_G1)
+        bool "nna app select"
+		default n
+
+		if FH_NNA_APP_SELECT
+			choice
+				prompt "FH NNA APP List"
+				default FH_APP_OPEN_NN_DETECT
+
+				config FH_APP_OPEN_NN_DETECT
+					bool "Do Human Detect"
+
+				config FH_APP_OPEN_NN_C2D
+					bool "Do Human & car Detect"
+
+				config FH_APP_OPEN_NN_FACE
+					bool "Do face Detect"
+			endchoice
+		endif
+endmenu
+
+config MULTI_SENSOR
+        bool "select multi sensor"
+		default n
+
+menuconfig VIDEO_GRP0
+	bool "Video Group 0"
+	default y
+
+if VIDEO_GRP0
+	choice
+		prompt "Source Input"
+		default VPU_MODE_ISP_G0
+
+		config VPU_MODE_ISP_G0
+			bool "ISP In"
+	endchoice
+
+	if VPU_MODE_ISP_G0
+		menu "ISP Config"
+
+			config FH_APP_USING_IRCUT_G0
+				bool "Open Ircut"
+				default n
+
+			config MAX_ISP_WIDTH_G0
+				int "Max ISP width"
+				default 0
+
+			config MAX_ISP_HEIGHT_G0
+				int "Max ISP height"
+				default 0
+
+			choice
+				prompt "Choose sensor"
+				default FH_USING_OVOS02K_MIPI_G0
+
+				config FH_USING_OVOS02K_MIPI_G0
+					bool "ovos02k_mipi"
+				
+				config FH_USING_OVOS02D_MIPI_G0
+					bool "ovos02d_mipi"
+
+				config FH_USING_DUMMY_SENSOR_G0
+					bool "dummy_sensor"
+				config FH_USING_GC2083_MIPI_G0
+					bool "gc2083_mipi"
+			endchoice
+
+			choice
+				prompt "Select ISP FORMAT"
+				default FH_APP_USING_FORMAT_1080P25_G0
+				help
+					Select the FORMAT of  ISP.
+
+				config FH_APP_USING_FORMAT_720P25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS02K_MIPI_G0
+					bool "FORMAT_720P25"
+
+				config FH_APP_USING_FORMAT_720P25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS02D_MIPI_G0
+					bool "FORMAT_720P25_WDR"
+
+				config FH_APP_USING_FORMAT_720P30_G0
+					depends on FH_USING_GC2083_MIPI_G0
+					bool "FORMAT_720P30"
+
+				config FH_APP_USING_FORMAT_1080P20_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_1080P20"
+
+				config FH_APP_USING_FORMAT_1080P25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS02K_MIPI_G0 || FH_USING_OVOS02D_MIPI_G0 || FH_USING_OVOS05_MIPI_G0 || FH_USING_GC2083_MIPI_G0
+					bool "FORMAT_1080P25"
+
+				config FH_APP_USING_FORMAT_1080P30_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS02K_MIPI_G0 || FH_USING_OVOS02D_MIPI_G0 || FH_USING_OVOS05_MIPI_G0 || FH_USING_SC3335_MIPI_G0 || FH_USING_GC2083_MIPI_G0
+					bool "FORMAT_1080P30"
+
+				config FH_APP_USING_FORMAT_1080P60_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_1080P60"
+
+				config FH_APP_USING_FORMAT_1080P25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS02K_MIPI_G0 || FH_USING_OVOS02D_MIPI_G0
+					bool "FORMAT_1080P25_WDR"
+
+				config FH_APP_USING_FORMAT_1080P30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS02K_MIPI_G0 || FH_USING_OVOS02D_MIPI_G0
+					bool "FORMAT_1080P30_WDR"
+
+				config FH_APP_USING_FORMAT_1536P25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_1536P25"
+
+				config FH_APP_USING_FORMAT_1536P30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_1536P30"
+
+				config FH_APP_USING_FORMAT_1536P40_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_1536P40"
+
+				config FH_APP_USING_FORMAT_400WP20_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_400WP20"
+
+				config FH_APP_USING_FORMAT_400WP25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_400WP25"
+
+				config FH_APP_USING_FORMAT_400WP30_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_400WP30"
+
+				config FH_APP_USING_FORMAT_400WP20_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0
+					bool "FORMAT_400WP20_WDR"
+
+				config FH_APP_USING_FORMAT_400WP25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_400WP25_WDR"
+
+				config FH_APP_USING_FORMAT_400WP30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_400WP30_WDR"
+
+				config FH_APP_USING_FORMAT_500W12P5_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_500W12P5"
+
+				config FH_APP_USING_FORMAT_500WP15_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_500WP15"
+
+				config FH_APP_USING_FORMAT_500WP20_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_500WP20"
+
+				config FH_APP_USING_FORMAT_500WP25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_500WP25"
+
+				config FH_APP_USING_FORMAT_500W12P5_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_500W12P5"
+
+				config FH_APP_USING_FORMAT_500WP15_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_500WP15"
+
+				config FH_APP_USING_FORMAT_500WP20_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_500WP20"
+
+				config FH_APP_USING_FORMAT_500WP25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_WDR_500WP25"
+
+				config FH_APP_USING_FORMAT_500WP30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_500WP30_WDR"
+
+				config FH_APP_USING_FORMAT_2304X1296P25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_2304X1296P25"
+
+				config FH_APP_USING_FORMAT_2304X1296P25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_2304X1296P25_WDR"
+
+				config FH_APP_USINT_FORMAT_2688X1520P25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_2688X1520P25"
+
+				config FH_APP_USINT_FORMAT_2688X1520P30_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_2688X1520P30"
+
+				config FH_APP_USINT_FORMAT_2688X1520P25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_2688X1520P25_WDR"
+
+				config FH_APP_USINT_FORMAT_2688X1520P30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS04C10_MIPI_G0 || FH_USING_OVOS05_MIPI_G0
+					bool "FORMAT_2688X1520P30_WDR"
+
+				config FH_APP_USINT_FORMAT_2592X1952P30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_2592X1952P30_WDR"
+
+				config FH_APP_USING_FORMAT_3072X1728P25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_3072X1728P25"
+
+				config FH_APP_USING_FORMAT_3072X1728P30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_3072X1728P30_WDR"
+
+				config FH_APP_USING_FORMAT_600WP20_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_600WP20_WDR"
+
+				config FH_APP_USING_FORMAT_800WP15_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_IMX415_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_800WP15"
+
+				config FH_APP_USING_FORMAT_800WP20_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_IMX415_MIPI_G0
+					bool "FORMAT_800WP20"
+
+				config FH_APP_USING_FORMAT_800WP25_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_800WP25"
+
+				config FH_APP_USING_FORMAT_800WP30_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_IMX415_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_800WP30"
+
+				config FH_APP_USING_FORMAT_800WP15_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_IMX415_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_800WP15_WDR"
+
+				config FH_APP_USING_FORMAT_800WP20_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_IMX415_MIPI_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_800WP20_WDR"
+
+				config FH_APP_USING_FORMAT_800WP25_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_OVOS08_MIPI_G0
+					bool "FORMAT_800WP25_WDR"
+
+				config FH_APP_USING_FORMAT_800WP30_WDR_G0
+					depends on FH_USING_DUMMY_SENSOR_G0 || FH_USING_IMX415_MIPI_G0
+					bool "FORMAT_WDR_800WP30"
+			endchoice
+		endmenu
+	endif
+
+	if VPU_MODE_ISP_G0
+		menu "VPU Config"
+			menuconfig CH0_ENABLE_G0
+				bool "Channel 0 enable"
+				default y
+
+				if CH0_ENABLE_G0
+					menuconfig YCMEAN_EN_G0
+						bool "Ycmean Enable"
+						default y
+
+						if YCMEAN_EN_G0
+							config YCMEAN_DS_G0
+								int "Ycmean Mode (4/8/16)"
+								default 16
+						endif
+
+					menuconfig BGM_ENABLE_G0
+						bool "bgm enable"
+						default y
+
+						if BGM_ENABLE_G0
+							config BGM_DS_G0
+								int "bgm mode (4/8/16)"
+								default 8
+						endif
+
+					config CPY_ENABLE_G0
+						bool "cpy enable"
+						default y
+
+					config SAD_ENABLE_G0
+						bool "sad enable( 1/8 subsampled )"
+						default y
+
+					config CH0_MAX_WIDTH_G0
+						int "CH0 Max Width   (Range 16 - 5120, Align by 16)"
+						default 0
+
+					config CH0_MAX_HEIGHT_G0
+						int "CH0 Max Height  (Range 16 - 4096, Align by 16)"
+						default 0
+
+					config CH0_WIDTH_G0
+						int "CH0 Width   (Range 16 - 5120, Align by 16)"
+						default 1920
+
+					config CH0_HEIGHT_G0
+						int "CH0 Height  (Range 16 - 4096, Align by 16)"
+						default 1088
+
+					choice
+						prompt "CH0 YUV STYLE"
+						default FH_CH0_USING_SCAN_G0
+
+						config FH_CH0_USING_SCAN_G0
+							bool "VOMODE SCAN"
+					endchoice
+
+					config CH0_BUFNUM_G0
+						int "CH0 buffer number"
+						default 3
+
+					choice
+						prompt "CH0 BIND"
+						default CH0_BIND_ENC_G0
+
+						config CH0_BIND_ENC_G0
+							depends on !FH_CH0_USING_YUYV_G0 && !FH_CH0_USING_NV16_G0
+							bool "BIND ENC"
+					endchoice
+
+					menuconfig CH0_MJPEG_G0
+						bool "MJPEG Enable"
+						default n
+
+						if CH0_MJPEG_G0
+							config CH0_MJPEG_BIT_RATE_G0
+								int "CH0 bitrate (kbps)"
+								default 2048
+
+							config CH0_MJPEG_FRAME_COUNT_G0
+								int "CH0 framecount"
+								default 25
+
+							config CH0_MJPEG_FRAME_TIME_G0
+								int "CH0 frametime"
+								default 1
+
+							choice
+								prompt "CH0 Bitrate Control Type"
+								default FH_CH0_USING_SAMPLE_MJPEG_VBR_G0
+
+								config FH_CH0_USING_SAMPLE_MJPEG_CBR_G0
+									bool "CBR"
+
+								config FH_CH0_USING_SAMPLE_MJPEG_VBR_G0
+									bool "VBR"
+
+								config FH_CH0_USING_SAMPLE_MJPEG_FIXQP_G0
+									bool "Fix QP"
+							endchoice
+						endif
+
+					if CH0_BIND_ENC_G0
+						menu "VENC"
+							config CH0_BIT_RATE_G0
+								int "CH0 bitrate (kbps)"
+								default 2048
+
+							config CH0_FRAME_COUNT_G0
+								int "CH0 framecount"
+								default 25
+
+							config CH0_FRAME_TIME_G0
+								int "CH0 frametime"
+								default 1
+
+							choice
+								prompt "CH0 Encode Type"
+								default FH_CH0_USING_SAMPLE_H264_G0
+
+								config FH_CH0_USING_SAMPLE_H264_G0
+									bool "NORMAL_H264"
+
+								config FH_CH0_USING_SAMPLE_S264_G0
+									bool "SMART_H264"
+
+								config FH_CH0_USING_SAMPLE_H265_G0
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "NORMAL_H265"
+
+								config FH_CH0_USING_SAMPLE_S265_G0
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "SMART_H265"
+							endchoice
+
+							config FH_CH0_OPEN_BREATH_EFFECT_G0
+								bool "Open CH0 Breath Effect"
+								default n
+
+							choice
+								prompt "CH0 Bitrate Control Type"
+								default FH_CH0_USING_SAMPLE_H264_VBR_G0
+								depends on !FH_CH0_USING_SAMPLE_NONE_G0
+
+								config FH_CH0_USING_SAMPLE_H264_VBR_G0
+									depends on FH_CH0_USING_SAMPLE_H264_G0 || FH_CH0_USING_SAMPLE_S264_G0
+									bool "VBR"
+
+								config FH_CH0_USING_SAMPLE_H265_VBR_G0
+									depends on FH_CH0_USING_SAMPLE_H265_G0 || FH_CH0_USING_SAMPLE_S265_G0
+									bool "VBR"
+
+								config FH_CH0_USING_SAMPLE_H264_FIXQP_G0
+									depends on FH_CH0_USING_SAMPLE_H264_G0 || FH_CH0_USING_SAMPLE_S264_G0
+									bool "Fix QP"
+
+								config FH_CH0_USING_SAMPLE_H265_FIXQP_G0
+									depends on FH_CH0_USING_SAMPLE_H265_G0 || FH_CH0_USING_SAMPLE_S265_G0
+									bool "Fix QP"
+
+								config FH_CH0_USING_SAMPLE_H264_CBR_G0
+									depends on FH_CH0_USING_SAMPLE_H264_G0 || FH_CH0_USING_SAMPLE_S264_G0
+									bool "CBR"
+
+								config FH_CH0_USING_SAMPLE_H265_CBR_G0
+									depends on FH_CH0_USING_SAMPLE_H265_G0 || FH_CH0_USING_SAMPLE_S265_G0
+									bool "CBR"
+
+								config FH_CH0_USING_SAMPLE_H264_AVBR_G0
+									depends on FH_CH0_USING_SAMPLE_H264_G0 || FH_CH0_USING_SAMPLE_S264_G0
+									bool "AVBR"
+
+								config FH_CH0_USING_SAMPLE_H265_AVBR_G0
+									depends on FH_CH0_USING_SAMPLE_H265_G0 || FH_CH0_USING_SAMPLE_S265_G0
+									bool "AVBR"
+
+								config FH_CH0_USING_SAMPLE_H264_CVBR_G0
+									depends on (FH_CH0_USING_SAMPLE_H264_G0 || FH_CH0_USING_SAMPLE_S264_G0)
+									bool "CVBR"
+
+								config FH_CH0_USING_SAMPLE_H265_CVBR_G0
+									depends on (FH_CH0_USING_SAMPLE_H265_G0 || FH_CH0_USING_SAMPLE_S265_G0)
+									bool "CVBR"
+
+								config FH_CH0_USING_SAMPLE_H264_QVBR_G0
+									depends on (FH_CH0_USING_SAMPLE_H264_G0 || FH_CH0_USING_SAMPLE_S264_G0)
+									bool "QVBR"
+
+								config FH_CH0_USING_SAMPLE_H265_QVBR_G0
+									depends on (FH_CH0_USING_SAMPLE_H265_G0 || FH_CH0_USING_SAMPLE_S265_G0)
+									bool "QVBR"
+							endchoice
+						endmenu
+					endif
+				endif
+
+			menuconfig CH1_ENABLE_G0
+				bool "Channel 1 enable"
+				default n
+
+				if CH1_ENABLE_G0
+
+					config CH1_MAX_WIDTH_G0
+						int "CH1 Max Width   (Range 16 - 2560, Align by 16)"
+						default 0
+
+					config CH1_MAX_HEIGHT_G0
+						int "CH1 Max Height  (Range 16 - 4096, Align by 16)"
+						default 0
+
+					config CH1_WIDTH_G0
+						int "CH1 Width   (Range 16 - 2560, Align by 16)"
+						range 16 2560
+						default 720
+
+					config CH1_HEIGHT_G0
+						int "CH1 Height  (Range 16 - 4096, Align by 16)"
+						range 16 4096
+						default 576
+
+					choice
+						prompt "CH1 YUV STYLE"
+						default FH_CH1_USING_SCAN_G0
+
+						config FH_CH1_USING_SCAN_G0
+							bool "VOMODE SCAN"
+					endchoice
+
+					config CH1_BUFNUM_G0
+						int "CH1 buffer number"
+						default 3
+
+					choice
+						prompt "CH1 BIND"
+						default CH1_BIND_ENC_G0
+
+						config CH1_BIND_ENC_G0
+							depends on !FH_CH1_USING_YUYV_G0 && !FH_CH1_USING_NV16_G0
+							bool "BIND ENC"
+					endchoice
+
+					menuconfig CH1_MJPEG_G0
+						bool "MJPEG Enable"
+						default n
+
+						if CH1_MJPEG_G0
+							config CH1_MJPEG_BIT_RATE_G0
+								int "CH1 bitrate (kbps)"
+								default 2048
+
+							config CH1_MJPEG_FRAME_COUNT_G0
+								int "CH1 framecount"
+								default 25
+
+							config CH1_MJPEG_FRAME_TIME_G0
+								int "CH1 frametime"
+								default 1
+
+							choice
+								prompt "CH1 Bitrate Control Type"
+								default FH_CH1_USING_SAMPLE_MJPEG_VBR_G0
+
+								config FH_CH1_USING_SAMPLE_MJPEG_CBR_G0
+									bool "CBR"
+
+								config FH_CH1_USING_SAMPLE_MJPEG_VBR_G0
+									bool "VBR"
+
+								config FH_CH1_USING_SAMPLE_MJPEG_FIXQP_G0
+									bool "Fix QP"
+							endchoice
+						endif
+
+					if CH1_BIND_ENC_G0
+						menu "VENC"
+							config CH1_BIT_RATE_G0
+								int "CH1 bitrate (kbps)"
+								default 1024
+
+							config CH1_FRAME_COUNT_G0
+								int "CH1 framecount"
+								default 25
+
+							config CH1_FRAME_TIME_G0
+								int "CH1 frametime"
+								default 1
+							choice
+								prompt "CH1 Encode Type"
+								default FH_CH1_USING_SAMPLE_H264_G0
+
+								config FH_CH1_USING_SAMPLE_H264_G0
+									bool "NORMAL_H264"
+
+								config FH_CH1_USING_SAMPLE_S264_G0
+									bool "SMART_H264"
+
+								config FH_CH1_USING_SAMPLE_H265_G0
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "NORMAL_H265"
+
+								config FH_CH1_USING_SAMPLE_S265_G0
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "SMART_H265"
+
+								config FH_CH1_USING_SAMPLE_MJPEG_G0
+									bool "MJPEG"
+							endchoice
+
+							config FH_CH1_OPEN_BREATH_EFFECT_G0
+								bool "Open CH1 Breath Effect (Not Suggested)"
+								default n
+
+							choice
+								prompt "CH1 Bitrate Control Type"
+								default FH_CH1_USING_SAMPLE_H264_VBR_G0
+								depends on !FH_CH1_USING_SAMPLE_NONE_G0
+
+								config FH_CH1_USING_SAMPLE_H264_VBR_G0
+									depends on FH_CH1_USING_SAMPLE_H264_G0 || FH_CH1_USING_SAMPLE_S264_G0
+									bool "VBR"
+
+								config FH_CH1_USING_SAMPLE_H265_VBR_G0
+									depends on FH_CH1_USING_SAMPLE_H265_G0 || FH_CH1_USING_SAMPLE_S265_G0
+									bool "VBR"
+
+								config FH_CH1_USING_SAMPLE_H264_FIXQP_G0
+									depends on FH_CH1_USING_SAMPLE_H264_G0 || FH_CH1_USING_SAMPLE_S264_G0
+									bool "Fix QP"
+
+								config FH_CH1_USING_SAMPLE_H265_FIXQP_G0
+									depends on FH_CH1_USING_SAMPLE_H265_G0 || FH_CH1_USING_SAMPLE_S265_G0
+									bool "Fix QP"
+
+								config FH_CH1_USING_SAMPLE_H264_CBR_G0
+									depends on FH_CH1_USING_SAMPLE_H264_G0 || FH_CH1_USING_SAMPLE_S264_G0
+									bool "CBR"
+
+								config FH_CH1_USING_SAMPLE_H265_CBR_G0
+									depends on FH_CH1_USING_SAMPLE_H265_G0 || FH_CH1_USING_SAMPLE_S265_G0
+									bool "CBR"
+
+								config FH_CH1_USING_SAMPLE_H264_AVBR_G0
+									depends on FH_CH1_USING_SAMPLE_H264_G0 || FH_CH1_USING_SAMPLE_S264_G0
+									bool "AVBR"
+
+								config FH_CH1_USING_SAMPLE_H265_AVBR_G0
+									depends on FH_CH1_USING_SAMPLE_H265_G0 || FH_CH1_USING_SAMPLE_S265_G0
+									bool "AVBR"
+
+								config FH_CH1_USING_SAMPLE_H264_CVBR_G0
+									depends on (FH_CH1_USING_SAMPLE_H264_G0 || FH_CH1_USING_SAMPLE_S264_G0)
+									bool "CVBR"
+
+								config FH_CH1_USING_SAMPLE_H265_CVBR_G0
+									depends on (FH_CH1_USING_SAMPLE_H265_G0 || FH_CH1_USING_SAMPLE_S265_G0)
+									bool "CVBR"
+
+								config FH_CH1_USING_SAMPLE_H264_QVBR_G0
+									depends on (FH_CH1_USING_SAMPLE_H264_G0 || FH_CH1_USING_SAMPLE_S264_G0)
+									bool "QVBR"
+
+								config FH_CH1_USING_SAMPLE_H265_QVBR_G0
+									depends on (FH_CH1_USING_SAMPLE_H265_G0 || FH_CH1_USING_SAMPLE_S265_G0)
+									bool "QVBR"
+							endchoice
+						endmenu
+					endif
+				endif
+			menuconfig CH2_ENABLE_G0
+				depends on !CONFIG_ARCH_FH8626V200
+				bool "Channel 2 enable"
+				default n
+
+				if CH2_ENABLE_G0
+					config CH2_MAX_WIDTH_G0
+						int "CH2 Max Width   (Range 16 - 1024, Align by 16)"
+						default 0
+
+					config CH2_MAX_HEIGHT_G0
+						int "CH2 Max Height  (Range 16 - 4096, Align by 16)"
+						default 0
+
+					config CH2_WIDTH_G0
+							int "CH2 Width   (Range 16 - 1024, Align by 16)"
+							range 16 1024
+							default 512
+
+					config CH2_HEIGHT_G0
+							int "CH2 Height  (Range 16 - 4096, Align by 16)"
+							range 16 4096
+							default 288
+
+					choice
+						prompt "CH2 YUV STYLE"
+						default FH_CH2_USING_RGB888_G0
+						config FH_CH2_USING_RGB888_G0
+							bool "VOMODE RGB888"
+					endchoice
+
+					config CH2_BUFNUM_G0
+						int "CH2 buffer number"
+						default 3
+
+					config NN_ENABLE_G0
+						bool "NN ENABLE"
+						default y
+				endif
+		endmenu
+
+		menu "Network Protocol for sending stream"
+			config FH_APP_USING_PES_G0
+				bool "Using Pes Pack"
+				default y
+
+			if FH_APP_USING_PES_G0
+				choice
+					prompt "Pes Send Type"
+					default FH_APP_USING_UDP_G0
+
+					config FH_APP_USING_UDP_G0
+					bool "Using UDP"
+
+					config FH_APP_USING_SRT_G0
+					bool "Using SRT"
+				endchoice
+			endif
+
+			config FH_APP_USING_RTSP_G0
+				bool "Using RTSP"
+				default n
+
+			config FH_APP_RECORD_RAW_STREAM_G0
+				bool "Record Raw Stream"
+				default n
+		endmenu
+	endif
+endif
+
+menuconfig VIDEO_GRP1
+	depends on MULTI_SENSOR
+	bool "Video Group 1"
+	default n
+
+if VIDEO_GRP1
+	choice
+		prompt "Source Input"
+		default VPU_MODE_ISP_G1
+
+		config VPU_MODE_ISP_G1
+			bool "ISP In"
+	endchoice
+
+	if VPU_MODE_ISP_G1
+		menu "ISP Config"
+
+			config FH_APP_USING_IRCUT_G1
+				bool "Open Ircut"
+				default n
+
+			config MAX_ISP_WIDTH_G1
+				int "Max ISP width"
+				default 0
+
+			config MAX_ISP_HEIGHT_G1
+				int "Max ISP height"
+				default 0
+
+			choice
+				prompt "Choose sensor"
+				default FH_USING_OVOS02K_MIPI_G1
+
+				config FH_USING_OVOS02K_MIPI_G1
+					bool "ovos02k_mipi"
+				
+				config FH_USING_OVOS02D_MIPI_G1
+					bool "ovos02d_mipi"
+
+				config FH_USING_DUMMY_SENSOR_G1
+					bool "dummy_sensor"
+				config FH_USING_GC2083_MIPI_G1
+					bool "gc2083_mipi"
+			endchoice
+
+			choice
+				prompt "Select ISP FORMAT"
+				default FH_APP_USING_FORMAT_1080P25_G1
+				help
+					Select the FORMAT of  ISP.
+
+				config FH_APP_USING_FORMAT_720P25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS02K_MIPI_G1
+					bool "FORMAT_720P25"
+
+				config FH_APP_USING_FORMAT_720P25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS02D_MIPI_G1
+					bool "FORMAT_720P25_WDR"
+
+				config FH_APP_USING_FORMAT_720P30_G1
+					depends on  FH_USING_GC2083_MIPI_G1
+					bool "FORMAT_720P30"
+
+				config FH_APP_USING_FORMAT_1080P20_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_1080P20"
+
+				config FH_APP_USING_FORMAT_1080P25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS02K_MIPI_G1 || FH_USING_OVOS02D_MIPI_G1 || FH_USING_OVOS05_MIPI_G1 || FH_USING_GC2083_MIPI_G1
+					bool "FORMAT_1080P25"
+
+				config FH_APP_USING_FORMAT_1080P30_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS02K_MIPI_G1 || FH_USING_OVOS02D_MIPI_G1 || FH_USING_OVOS05_MIPI_G1 || FH_USING_SC3335_MIPI_G1 || FH_USING_GC2083_MIPI_G1
+					bool "FORMAT_1080P30"
+
+				config FH_APP_USING_FORMAT_1080P60_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_1080P60"
+
+				config FH_APP_USING_FORMAT_1080P25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS02K_MIPI_G1 || FH_USING_OVOS02D_MIPI_G1
+					bool "FORMAT_1080P25_WDR"
+
+				config FH_APP_USING_FORMAT_1080P30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS02K_MIPI_G1 || FH_USING_OVOS02D_MIPI_G1
+					bool "FORMAT_1080P30_WDR"
+
+				config FH_APP_USING_FORMAT_1536P25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_1536P25"
+
+				config FH_APP_USING_FORMAT_1536P30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_1536P30"
+
+				config FH_APP_USING_FORMAT_1536P40_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_1536P40"
+
+				config FH_APP_USING_FORMAT_400WP20_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_400WP20"
+
+				config FH_APP_USING_FORMAT_400WP25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_400WP25"
+
+				config FH_APP_USING_FORMAT_400WP30_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_400WP30"
+
+				config FH_APP_USING_FORMAT_400WP20_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1
+					bool "FORMAT_400WP20_WDR"
+
+				config FH_APP_USING_FORMAT_400WP25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_400WP25_WDR"
+
+				config FH_APP_USING_FORMAT_400WP30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_400WP30_WDR"
+
+				config FH_APP_USING_FORMAT_500W12P5_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_500W12P5"
+
+				config FH_APP_USING_FORMAT_500WP15_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_500WP15"
+
+				config FH_APP_USING_FORMAT_500WP20_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_500WP20"
+
+				config FH_APP_USING_FORMAT_500WP25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_500WP25"
+
+				config FH_APP_USING_FORMAT_500W12P5_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_500W12P5"
+
+				config FH_APP_USING_FORMAT_500WP15_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_500WP15"
+
+				config FH_APP_USING_FORMAT_500WP20_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_500WP20"
+
+				config FH_APP_USING_FORMAT_500WP25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_WDR_500WP25"
+
+				config FH_APP_USING_FORMAT_500WP30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_500WP30_WDR"
+
+				config FH_APP_USING_FORMAT_2304X1296P25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_2304X1296P25"
+
+				config FH_APP_USING_FORMAT_2304X1296P25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_2304X1296P25_WDR"
+
+				config FH_APP_USINT_FORMAT_2688X1520P25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_2688X1520P25"
+
+				config FH_APP_USINT_FORMAT_2688X1520P30_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_2688X1520P30"
+
+				config FH_APP_USINT_FORMAT_2688X1520P25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_2688X1520P25_WDR"
+
+				config FH_APP_USINT_FORMAT_2688X1520P30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS04C10_MIPI_G1 || FH_USING_OVOS05_MIPI_G1
+					bool "FORMAT_2688X1520P30_WDR"
+
+				config FH_APP_USINT_FORMAT_2592X1952P30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_2592X1952P30_WDR"
+
+				config FH_APP_USING_FORMAT_3072X1728P25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_3072X1728P25"
+
+				config FH_APP_USING_FORMAT_3072X1728P30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_3072X1728P30_WDR"
+
+				config FH_APP_USING_FORMAT_600WP20_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_600WP20_WDR"
+
+				config FH_APP_USING_FORMAT_800WP15_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_IMX415_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_800WP15"
+
+				config FH_APP_USING_FORMAT_800WP25_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_800WP25"
+
+				config FH_APP_USING_FORMAT_800WP30_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_IMX415_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_800WP30"
+
+				config FH_APP_USING_FORMAT_800WP15_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_IMX415_MIPI_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_800WP15_WDR"
+
+				config FH_APP_USING_FORMAT_800WP20_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_IMX415_MIPI_G1 ||FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_800WP20_WDR"
+
+				config FH_APP_USING_FORMAT_800WP25_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_OVOS08_MIPI_G1
+					bool "FORMAT_800WP25_WDR"
+
+				config FH_APP_USING_FORMAT_800WP30_WDR_G1
+					depends on FH_USING_DUMMY_SENSOR_G1 || FH_USING_IMX415_MIPI_G1
+					bool "FORMAT_WDR_800WP30"
+			endchoice
+		endmenu
+	endif
+	if VPU_MODE_ISP_G1
+		menu "VPU Config"
+			menuconfig CH0_ENABLE_G1
+				bool "Channel 0 enable"
+				default y
+
+				if CH0_ENABLE_G1
+					menuconfig YCMEAN_EN_G1
+						bool "Ycmean Enable"
+						default y
+
+						if YCMEAN_EN_G1
+							config YCMEAN_DS_G1
+								int "Ycmean Mode (4/8/16)"
+								default 16
+						endif
+
+					menuconfig BGM_ENABLE_G1
+						bool "bgm enable"
+						default y
+
+						if BGM_ENABLE_G1
+							config BGM_DS_G1
+								int "bgm mode (4/8/16)"
+								default 8
+						endif
+
+					config CPY_ENABLE_G1
+						bool "cpy enable"
+						default y
+
+					config SAD_ENABLE_G1
+						bool "sad enable( 1/8 subsampled )"
+						default y
+
+					config CH0_MAX_WIDTH_G1
+						int "CH0 Max Width   (Range 16 - 5120, Align by 16)"
+						default 0
+
+					config CH0_MAX_HEIGHT_G1
+						int "CH0 Max Height  (Range 16 - 4096, Align by 16)"
+						default 0
+
+					config CH0_WIDTH_G1
+						int "CH0 Width   (Range 16 - 5120, Align by 16)"
+						default 1920
+
+					config CH0_HEIGHT_G1
+						int "CH0 Height  (Range 16 - 4096, Align by 16)"
+						default 1088
+
+					choice
+						prompt "CH0 YUV STYLE"
+						default FH_CH0_USING_SCAN_G1
+
+						config FH_CH0_USING_SCAN_G1
+							bool "VOMODE SCAN"
+					endchoice
+
+					config CH0_BUFNUM_G1
+						int "CH0 buffer number"
+						default 3
+
+					choice
+						prompt "CH0 BIND"
+						default CH0_BIND_ENC_G1
+
+						config CH0_BIND_ENC_G1
+							depends on !FH_CH0_USING_YUYV_G1 && !FH_CH0_USING_NV16_G1
+							bool "BIND ENC"
+					endchoice
+
+					menuconfig CH0_MJPEG_G1
+						bool "MJPEG Enable"
+						default n
+
+						if CH0_MJPEG_G1
+							config CH0_MJPEG_BIT_RATE_G1
+								int "CH0 bitrate (kbps)"
+								default 2048
+
+							config CH0_MJPEG_FRAME_COUNT_G1
+								int "CH0 framecount"
+								default 25
+
+							config CH0_MJPEG_FRAME_TIME_G1
+								int "CH0 frametime"
+								default 1
+
+							choice
+								prompt "CH0 Bitrate Control Type"
+								default FH_CH0_USING_SAMPLE_MJPEG_VBR_G1
+
+								config FH_CH0_USING_SAMPLE_MJPEG_CBR_G1
+									bool "CBR"
+
+								config FH_CH0_USING_SAMPLE_MJPEG_VBR_G1
+									bool "VBR"
+
+								config FH_CH0_USING_SAMPLE_MJPEG_FIXQP_G1
+									bool "Fix QP"
+							endchoice
+						endif
+
+					if CH0_BIND_ENC_G1
+						menu "VENC"
+							config CH0_BIT_RATE_G1
+								int "CH0 bitrate (kbps)"
+								default 2048
+
+							config CH0_FRAME_COUNT_G1
+								int "CH0 framecount"
+								default 25
+
+							config CH0_FRAME_TIME_G1
+								int "CH0 frametime"
+								default 1
+
+							choice
+								prompt "CH0 Encode Type"
+								default FH_CH0_USING_SAMPLE_H264_G1
+
+								config FH_CH0_USING_SAMPLE_H264_G1
+									bool "NORMAL_H264"
+
+								config FH_CH0_USING_SAMPLE_S264_G1
+									bool "SMART_H264"
+
+								config FH_CH0_USING_SAMPLE_H265_G1
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "NORMAL_H265"
+
+								config FH_CH0_USING_SAMPLE_S265_G1
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "SMART_H265"
+
+								config FH_CH0_USING_SAMPLE_NONE_G1
+									bool "NONE"
+							endchoice
+
+							config FH_CH0_OPEN_BREATH_EFFECT_G1
+								bool "Open CH0 Breath Effect"
+								default n
+
+							choice
+								prompt "CH0 Bitrate Control Type"
+								default FH_CH0_USING_SAMPLE_H264_VBR_G1
+								depends on !FH_CH0_USING_SAMPLE_NONE_G1
+
+								config FH_CH0_USING_SAMPLE_H264_VBR_G1
+									depends on FH_CH0_USING_SAMPLE_H264_G1 || FH_CH0_USING_SAMPLE_S264_G1
+									bool "VBR"
+
+								config FH_CH0_USING_SAMPLE_H265_VBR_G1
+									depends on FH_CH0_USING_SAMPLE_H265_G1 || FH_CH0_USING_SAMPLE_S265_G1
+									bool "VBR"
+
+								config FH_CH0_USING_SAMPLE_H264_FIXQP_G1
+									depends on FH_CH0_USING_SAMPLE_H264_G1 || FH_CH0_USING_SAMPLE_S264_G1
+									bool "Fix QP"
+
+								config FH_CH0_USING_SAMPLE_H265_FIXQP_G1
+									depends on FH_CH0_USING_SAMPLE_H265_G1 || FH_CH0_USING_SAMPLE_S265_G1
+									bool "Fix QP"
+
+								config FH_CH0_USING_SAMPLE_H264_CBR_G1
+									depends on FH_CH0_USING_SAMPLE_H264_G1 || FH_CH0_USING_SAMPLE_S264_G1
+									bool "CBR"
+
+								config FH_CH0_USING_SAMPLE_H265_CBR_G1
+									depends on FH_CH0_USING_SAMPLE_H265_G1 || FH_CH0_USING_SAMPLE_S265_G1
+									bool "CBR"
+
+								config FH_CH0_USING_SAMPLE_H264_AVBR_G1
+									depends on FH_CH0_USING_SAMPLE_H264_G1 || FH_CH0_USING_SAMPLE_S264_G1
+									bool "AVBR"
+
+								config FH_CH0_USING_SAMPLE_H265_AVBR_G1
+									depends on FH_CH0_USING_SAMPLE_H265_G1 || FH_CH0_USING_SAMPLE_S265_G1
+									bool "AVBR"
+
+								config FH_CH0_USING_SAMPLE_H264_CVBR_G1
+									depends on (FH_CH0_USING_SAMPLE_H264_G1 || FH_CH0_USING_SAMPLE_S264_G1)
+									bool "CVBR"
+
+								config FH_CH0_USING_SAMPLE_H265_CVBR_G1
+									depends on (FH_CH0_USING_SAMPLE_H265_G1 || FH_CH0_USING_SAMPLE_S265_G1)
+									bool "CVBR"
+
+								config FH_CH0_USING_SAMPLE_H264_QVBR_G1
+									depends on (FH_CH0_USING_SAMPLE_H264_G1 || FH_CH0_USING_SAMPLE_S264_G1)
+									bool "QVBR"
+
+								config FH_CH0_USING_SAMPLE_H265_QVBR_G1
+									depends on (FH_CH0_USING_SAMPLE_H265_G1 || FH_CH0_USING_SAMPLE_S265_G1)
+									bool "QVBR"
+							endchoice
+						endmenu
+					endif
+				endif
+
+			menuconfig CH1_ENABLE_G1
+				bool "Channel 1 enable"
+				default n
+
+				if CH1_ENABLE_G1
+
+					config CH1_MAX_WIDTH_G1
+						int "CH1 Max Width   (Range 16 - 2560, Align by 16)"
+						default 0
+
+					config CH1_MAX_HEIGHT_G1
+						int "CH1 Max Height  (Range 16 - 4096, Align by 16)"
+						default 0
+
+					config CH1_WIDTH_G1
+						int "CH1 Width   (Range 16 - 2560, Align by 16)"
+						range 16 2560
+						default 720
+
+					config CH1_HEIGHT_G1
+						int "CH1 Height  (Range 16 - 4096, Align by 16)"
+						range 16 4096
+						default 576
+
+					choice
+						prompt "CH1 YUV STYLE"
+						default FH_CH1_USING_SCAN_G1
+
+						config FH_CH1_USING_SCAN_G1
+							bool "VOMODE SCAN"
+					endchoice
+
+					config CH1_BUFNUM_G1
+						int "CH1 buffer number"
+						default 3
+
+					choice
+						prompt "CH1 BIND"
+						default CH1_BIND_ENC_G1
+
+						config CH1_BIND_ENC_G1
+							depends on !FH_CH1_USING_YUYV_G1 && !FH_CH1_USING_NV16_G1
+							bool "BIND ENC"
+					endchoice
+
+					menuconfig CH1_MJPEG_G1
+						bool "MJPEG Enable"
+						default n
+
+						if CH1_MJPEG_G1
+							config CH1_MJPEG_BIT_RATE_G1
+								int "CH1 bitrate (kbps)"
+								default 2048
+
+							config CH1_MJPEG_FRAME_COUNT_G1
+								int "CH1 framecount"
+								default 25
+
+							config CH1_MJPEG_FRAME_TIME_G1
+								int "CH1 frametime"
+								default 1
+
+							choice
+								prompt "CH1 Bitrate Control Type"
+								default FH_CH1_USING_SAMPLE_MJPEG_VBR_G1
+
+								config FH_CH1_USING_SAMPLE_MJPEG_CBR_G1
+									bool "CBR"
+
+								config FH_CH1_USING_SAMPLE_MJPEG_VBR_G1
+									bool "VBR"
+
+								config FH_CH1_USING_SAMPLE_MJPEG_FIXQP_G1
+									bool "Fix QP"
+							endchoice
+						endif
+
+					if CH1_BIND_ENC_G1
+						menu "VENC"
+							config CH1_BIT_RATE_G1
+								int "CH1 bitrate (kbps)"
+								default 1024
+
+							config CH1_FRAME_COUNT_G1
+								int "CH1 framecount"
+								default 25
+
+							config CH1_FRAME_TIME_G1
+								int "CH1 frametime"
+								default 1
+							choice
+								prompt "CH1 Encode Type"
+								default FH_CH1_USING_SAMPLE_H264_G1
+
+								config FH_CH1_USING_SAMPLE_H264_G1
+									bool "NORMAL_H264"
+
+								config FH_CH1_USING_SAMPLE_S264_G1
+									bool "SMART_H264"
+
+								config FH_CH1_USING_SAMPLE_H265_G1
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "NORMAL_H265"
+
+								config FH_CH1_USING_SAMPLE_S265_G1
+									depends on !CONFIG_ARCH_FH8626V200
+									bool "SMART_H265"
+
+								config FH_CH1_USING_SAMPLE_MJPEG_G1
+									bool "MJPEG"
+
+								config FH_CH1_USING_SAMPLE_NONE_G1
+									bool "NONE"
+							endchoice
+
+							config FH_CH1_OPEN_BREATH_EFFECT_G1
+								bool "Open CH1 Breath Effect (Not Suggested)"
+								default n
+
+							choice
+								prompt "CH1 Bitrate Control Type"
+								default FH_CH1_USING_SAMPLE_H264_VBR_G1
+								depends on !FH_CH1_USING_SAMPLE_NONE_G1
+
+								config FH_CH1_USING_SAMPLE_H264_VBR_G1
+									depends on FH_CH1_USING_SAMPLE_H264_G1 || FH_CH1_USING_SAMPLE_S264_G1
+									bool "VBR"
+
+								config FH_CH1_USING_SAMPLE_H265_VBR_G1
+									depends on FH_CH1_USING_SAMPLE_H265_G1 || FH_CH1_USING_SAMPLE_S265_G1
+									bool "VBR"
+
+								config FH_CH1_USING_SAMPLE_H264_FIXQP_G1
+									depends on FH_CH1_USING_SAMPLE_H264_G1 || FH_CH1_USING_SAMPLE_S264_G1
+									bool "Fix QP"
+
+								config FH_CH1_USING_SAMPLE_H265_FIXQP_G1
+									depends on FH_CH1_USING_SAMPLE_H265_G1 || FH_CH1_USING_SAMPLE_S265_G1
+									bool "Fix QP"
+
+								config FH_CH1_USING_SAMPLE_H264_CBR_G1
+									depends on FH_CH1_USING_SAMPLE_H264_G1 || FH_CH1_USING_SAMPLE_S264_G1
+									bool "CBR"
+
+								config FH_CH1_USING_SAMPLE_H265_CBR_G1
+									depends on FH_CH1_USING_SAMPLE_H265_G1 || FH_CH1_USING_SAMPLE_S265_G1
+									bool "CBR"
+
+								config FH_CH1_USING_SAMPLE_H264_AVBR_G1
+									depends on FH_CH1_USING_SAMPLE_H264_G1 || FH_CH1_USING_SAMPLE_S264_G1
+									bool "AVBR"
+
+								config FH_CH1_USING_SAMPLE_H265_AVBR_G1
+									depends on FH_CH1_USING_SAMPLE_H265_G1 || FH_CH1_USING_SAMPLE_S265_G1
+									bool "AVBR"
+
+								config FH_CH1_USING_SAMPLE_H264_CVBR_G1
+									depends on (FH_CH1_USING_SAMPLE_H264_G1 || FH_CH1_USING_SAMPLE_S264_G1)
+									bool "CVBR"
+
+								config FH_CH1_USING_SAMPLE_H265_CVBR_G1
+									depends on (FH_CH1_USING_SAMPLE_H265_G1 || FH_CH1_USING_SAMPLE_S265_G1)
+									bool "CVBR"
+
+								config FH_CH1_USING_SAMPLE_H264_QVBR_G1
+									depends on (FH_CH1_USING_SAMPLE_H264_G1 || FH_CH1_USING_SAMPLE_S264_G1)
+									bool "QVBR"
+
+								config FH_CH1_USING_SAMPLE_H265_QVBR_G1
+									depends on (FH_CH1_USING_SAMPLE_H265_G1 || FH_CH1_USING_SAMPLE_S265_G1)
+									bool "QVBR"
+							endchoice
+						endmenu
+					endif
+				endif
+			menuconfig CH2_ENABLE_G1
+				depends on !CONFIG_ARCH_FH8626V200
+				bool "Channel 2 enable"
+				default n
+
+				if CH2_ENABLE_G1
+					config CH2_MAX_WIDTH_G1
+						int "CH2 Max Width   (Range 16 - 1024, Align by 16)"
+						default 0
+
+					config CH2_MAX_HEIGHT_G1
+						int "CH2 Max Height  (Range 16 - 4096, Align by 16)"
+						default 0
+
+					config CH2_WIDTH_G1
+						int "CH2 Width   (Range 16 - 1024, Align by 16)"
+						range 16 1024
+						default 512
+
+					config CH2_HEIGHT_G1
+						int "CH2 Height  (Range 16 - 4096, Align by 16)"
+						range 16 4096
+						default 228
+
+					choice
+						prompt "CH2 YUV STYLE"
+						default FH_CH2_USING_RGB888_G1
+						config FH_CH2_USING_RGB888_G1
+							bool "VOMODE RGB888"
+					endchoice
+
+					config CH2_BUFNUM_G1
+						int "CH2 buffer number"
+						default 3
+
+					config NN_ENABLE_G1
+						bool "NN ENABLE"
+						default y
+				endif
+		endmenu
+
+		menu "Network Protocol for sending stream"
+			config FH_APP_USING_PES_G1
+				bool "Using Pes Pack"
+				default y
+
+			if FH_APP_USING_PES_G1
+				choice
+					prompt "Pes Send Type"
+					default FH_APP_USING_UDP_G1
+
+					config FH_APP_USING_UDP_G1
+					bool "Using UDP"
+
+					config FH_APP_USING_SRT_G1
+					bool "Using SRT"
+				endchoice
+			endif
+
+			config FH_APP_USING_RTSP_G1
+				bool "Using RTSP"
+				default n
+
+			config FH_APP_RECORD_RAW_STREAM_G1
+				bool "Record Raw Stream"
+				default n
+		endmenu
+	endif
+endif
+config FH_APP_USING_COOLVIEW
+	bool "coolview enable"
+	default n

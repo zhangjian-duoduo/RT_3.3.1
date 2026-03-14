@@ -1,0 +1,658 @@
+config CONFIG_ARCH_FH8862
+    bool
+    option env=CONFIG_ARCH_FH8862
+
+config CONFIG_ARCH_FH885xV310
+    bool
+    option env=CONFIG_ARCH_FH885xV310
+
+config CONFIG_ARCH_FH8636_FH8852V20X
+    bool
+    option env=CONFIG_ARCH_FH8636_FH8852V20X
+
+config CONFIG_CHIP_FH8626V200
+    bool
+    option env=CONFIG_CHIP_FH8626V200
+
+config CONFIG_ARCH_FH885xV300
+	bool
+	option env=CONFIG_ARCH_FH885xV300
+
+config FH_GRP_ID
+    int "Video Group ID"
+    range 0 2
+    default 0
+
+menu "ISP Config"
+
+config FH_USING_ISP
+    bool "FH_USING_ISP"
+    default y
+
+    config MAX_ISP_WIDTH
+        int "Max ISP width"
+        default 1920
+
+    config MAX_ISP_HEIGHT
+        int "Max ISP height"
+        default 1080
+
+menu "Choose Sensor"
+
+        config FH_USING_OVOS02K_MIPI
+            bool "ovos02k_mipi"
+            default y
+
+        config FH_USING_OVOS02D_MIPI
+            bool "ovos02d_mipi"
+            default n
+
+        config FH_USING_GC2083_MIPI
+            depends on CONFIG_ARCH_FH8636_FH8852V20X || CONFIG_CHIP_FH8626V200
+            bool "gc2083_mipi"
+            default n
+
+        config FH_USING_OVOS04C10_MIPI
+            depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            bool "ovos04c10_mipi"
+            default n
+
+        config FH_USING_DUMMY_SENSOR
+            bool "dummy_sensor"
+            default n
+
+        config FH_USING_OVOS05_MIPI
+            depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            bool "ovos05_mipi"
+            default n
+
+        config FH_USING_IMX415_MIPI
+            depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            bool "imx415_mipi"
+            default n
+
+        config FH_USING_OVOS08_MIPI
+            depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            bool "ovos08_mipi"
+            default n
+
+        config FH_USING_SONY485_MIPI
+            depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            bool "sony485_mipi"
+            default n
+endmenu
+
+choice
+    prompt "Choose ISP format"
+    default FH_APP_USING_FORMAT_1080P25
+        help
+            Select the FORMAT of  ISP.
+
+		config FH_APP_USING_FORMAT_720P25
+			depends on FH_USING_OVOS02K_MIPI
+			bool "FORMAT_720P25"
+
+		config FH_APP_USING_FORMAT_720P25_WDR
+			depends on FH_USING_OVOS02D_MIPI
+			bool "FORMAT_720P25_WDR"
+
+        config FH_APP_USING_FORMAT_720P30
+            depends on FH_USING_GC2083_MIPI
+            bool "FORMAT_720P30"
+
+        config FH_APP_USING_FORMAT_1080P25
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS02K_MIPI || FH_USING_OVOS02D_MIPI || FH_USING_OVOS05_MIPI || FH_USING_GC2083_MIPI
+            bool "FORMAT_1080P25"
+
+        config FH_APP_USING_FORMAT_1080P20
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_1080P20"
+
+        config FH_APP_USING_FORMAT_1080P30
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS02K_MIPI || FH_USING_OVOS02D_MIPI || FH_USING_GC2083_MIPI
+            bool "FORMAT_1080P30"
+
+        config FH_APP_USING_FORMAT_1080P60
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS08_MIPI
+            bool "FORMAT_1080P60"
+
+        config FH_APP_USING_FORMAT_1080P25_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS02K_MIPI || FH_USING_OVOS02D_MIPI
+            bool "FORMAT_1080P25_WDR"
+
+        config FH_APP_USING_FORMAT_1080P30_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS02K_MIPI || FH_USING_OVOS02D_MIPI
+            bool "FORMAT_1080P30_WDR"
+
+        config FH_APP_USING_FORMAT_400WP20
+            depends on  FH_USING_OVOS05_MIPI
+            bool "FORMAT_400WP20"
+
+        config FH_APP_USING_FORMAT_400WP25
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_400WP25"
+
+        config FH_APP_USING_FORMAT_400WP30
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_400WP30"
+
+        config FH_APP_USING_FORMAT_400WP25_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_400WP25_WDR"
+
+        config FH_APP_USING_FORMAT_400WP30_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_400WP30_WDR"
+
+        config FH_APP_USING_FORMAT_500W12P5
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500W12P5"
+
+        config FH_APP_USING_FORMAT_500WP15
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500WP15"
+
+        config FH_APP_USING_FORMAT_500WP20
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500WP20"
+
+        config FH_APP_USING_FORMAT_500WP25
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500WP25"
+
+        config FH_APP_USING_FORMAT_500W12P5_WDR
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500W12P5_WDR"
+
+        config FH_APP_USING_FORMAT_500WP15_WDR
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500WP15_WDR"
+
+        config FH_APP_USING_FORMAT_500WP20_WDR
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500WP20_WDR"
+
+        config FH_APP_USING_FORMAT_500WP25_WDR
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_500WP25_WDR"
+
+
+        config FH_APP_USING_FORMAT_2304X1296P25
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_2304X1296P25"
+
+        config FH_APP_USING_FORMAT_2304X1296P25_WDR
+            depends on FH_USING_OVOS05_MIPI
+            bool "FORMAT_2304X1296P25_WDR"
+
+        config FH_APP_USING_FORMAT_2688X1520P25
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_2688X1520P25"
+
+        config FH_APP_USING_FORMAT_2688X1520P30
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_2688X1520P30"
+
+        config FH_APP_USING_FORMAT_2688X1520P25_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_2688X1520P25_WDR"
+
+        config FH_APP_USING_FORMAT_2688X1520P30_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS04C10_MIPI || FH_USING_OVOS05_MIPI
+            bool "FORMAT_2688X1520P30_WDR"
+
+        config FH_APP_USING_FORMAT_2592X1952P30_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS08_MIPI
+            bool "FORMAT_2592X1952P30_WDR"
+
+        config FH_APP_USING_FORMAT_3072X1728P30
+            depends on FH_USING_DUMMY_SENSOR
+            bool "FORMAT_3072X1728P30"
+
+        config FH_APP_USING_FORMAT_3072X1728P25
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS08_MIPI
+            bool "FORMAT_3072X1728P25"
+
+        config FH_APP_USING_FORMAT_3072X1728P30_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS08_MIPI
+            bool "FORMAT_3072X1728P30_WDR"
+        config FH_APP_USING_FORMAT_800WP15
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS08_MIPI || FH_USING_IMX415_MIPI
+            bool "FORMAT_800WP15"
+
+        config FH_APP_USING_FORMAT_800WP30
+            depends on FH_USING_IMX415_MIPI || FH_USING_OVOS08_MIPI || FH_USING_SONY485_MIPI
+            bool "FORMAT_800WP30"
+
+        config FH_APP_USING_FORMAT_800WP25
+            depends on FH_USING_IMX415_MIPI || FH_USING_OVOS08_MIPI || FH_USING_SONY485_MIPI
+            bool "FORMAT_800WP25"
+
+        config FH_APP_USING_FORMAT_800WP15_WDR
+            depends on FH_USING_DUMMY_SENSOR || FH_USING_OVOS08_MIPI || FH_USING_IMX415_MIPI
+            bool "FORMAT_800WP15_WDR"
+
+        config FH_APP_USING_FORMAT_800WP20_WDR
+            depends on FH_USING_IMX415_MIPI
+            bool "FORMAT_800WP20_WDR"
+
+        config FH_APP_USING_FORMAT_800WP25_WDR
+            depends on FH_USING_OVOS08_MIPI
+            bool "FORMAT_800WP25_WDR"
+
+        config FH_APP_USING_FORMAT_800WP30_WDR
+            depends on FH_USING_IMX415_MIPI
+            bool "FORMAT_800WP30_WDR"
+    endchoice
+
+endmenu
+
+menu "DSP CONFIG"
+
+    menuconfig CH0_ENABLE
+        bool "Channel 0 enable"
+        default y
+
+    if CH0_ENABLE
+        config CH0_MAX_WIDTH
+            int "CH0 Max Width   (Range 16 - 5120, Align by 16)"
+            default 0
+
+        config CH0_MAX_HEIGHT
+            int "CH0 Max Height  (Range 16 - 4096, Align by 16)"
+            default 0
+
+        config CH0_WIDTH
+            int "CH0 Width   (Range 16 - 5120, Align by 16)"
+            default 1920
+
+        config CH0_HEIGHT
+            int "CH0 Height  (Range 16 - 4096, Align by 16)"
+            default 1080
+
+        config CH0_BIT_RATE
+            int "CH0 bitrate (kbps)"
+            default 2048
+
+        config CH0_FRAME_COUNT
+            int "CH0 framecount"
+            default 25
+
+        config CH0_FRAME_TIME
+            int "CH0 frametime"
+            default 1
+        choice
+            prompt "CH0 YUV STYLE"
+            default FH_CH0_USING_SCAN
+
+            config FH_CH0_USING_SCAN
+                bool "VOMODE SCAN"
+
+            config FH_CH0_USING_BLK
+                depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+                bool "VOMODE BLK"
+
+            config FH_CH0_USING_TILE192
+                depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+                bool "VOMODE TILE192"
+
+            config FH_CH0_USING_TILE224
+                depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+                bool "VOMODE TILE224"
+
+            config FH_CH0_USING_TILE256
+                depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+                bool "VOMODE TILE256"
+        endchoice
+    endif
+
+    menuconfig CH1_ENABLE
+        bool "Channel 1 enable"
+        default n
+
+    if CH1_ENABLE
+        config CH1_MAX_WIDTH
+            int "CH1 Max Width   (Range 16 - 2560, Align by 16)"
+            default 0
+
+        config CH1_MAX_HEIGHT
+            int "CH1 Max Height  (Range 16 - 4096, Align by 16)"
+            default 0
+
+        config CH1_WIDTH
+            int "CH1 Width   (Range 16 - 2560, Align by 16)"
+            range 16 1280
+            default 720
+
+        config CH1_HEIGHT
+            int "CH1 Height  (Range 16 - 4096, Align by 16)"
+            range 16 960
+            default 576
+
+        config CH1_BIT_RATE
+            int "CH1 bitrate (kbps)"
+            default 1024
+
+        config CH1_FRAME_COUNT
+            int "CH1 framecount"
+            default 25
+
+        config CH1_FRAME_TIME
+            int "CH1 frametime"
+            default 1
+        choice
+            prompt "CH1 YUV STYLE"
+            default FH_CH1_USING_SCAN
+
+            config FH_CH1_USING_SCAN
+                bool "VOMODE SCAN"
+
+            config FH_CH1_USING_BLK
+                bool "VOMODE BLK"
+
+            config FH_CH1_USING_TILE192
+                bool "VOMODE TILE192"
+
+            config FH_CH1_USING_TILE224
+                bool "VOMODE TILE224"
+
+            config FH_CH1_USING_TILE256
+                bool "VOMODE TILE256"
+        endchoice
+    endif
+
+    menuconfig CH2_ENABLE
+        bool "Channel 2 enable"
+        default n
+
+    if CH2_ENABLE
+        config CH2_MAX_WIDTH
+            int "CH2 Max Width   (Range 16 - 1280, Align by 16)"
+            default 0
+
+        config CH2_MAX_HEIGHT
+            int "CH2 Max Height  (Range 16 - 4096, Align by 16)"
+            default 0
+
+        config CH2_WIDTH
+            int "CH2 Width   (Range 16 - 1280, Align by 16)"
+            range 16 1280
+            default 512
+
+        config CH2_HEIGHT
+            int "CH2 Height  (Range 16 - 4096, Align by 16)"
+            range 16 960
+            default 288
+
+        if CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            config CH2_BIT_RATE
+                int "CH2 bitrate (kbps)"
+                default 1024
+
+            config CH2_FRAME_COUNT
+                int "CH2 framecount"
+                default 25
+
+            config CH2_FRAME_TIME
+                int "CH2 frametime"
+                default 1
+
+            choice
+                prompt "CH2 YUV STYLE"
+                default FH_CH2_USING_SCAN
+                config FH_CH2_USING_SCAN
+                    bool "VOMODE SCAN"
+
+                config FH_CH2_USING_BLK
+                    bool "VOMODE BLK"
+
+                config FH_CH2_USING_TILE192
+                    bool "VOMODE TILE192"
+
+                config FH_CH2_USING_TILE224
+                    bool "VOMODE TILE224"
+                config FH_CH2_USING_TILE256
+                    bool "VOMODE TILE256"
+            endchoice
+        endif
+        if CONFIG_ARCH_FH8636_FH8852V20X || CONFIG_CHIP_FH8626V200
+            choice
+                prompt "CH2 YUV STYLE"
+                default FH_CH2_USING_RGB888
+                config FH_CH2_USING_RGB888
+                    bool "VOMODE RGB888"
+            endchoice
+
+            config CH2_BUFNUM
+                int "CH2 buffer number"
+                default 3
+
+            config NN_ENABLE_G0
+                bool "NN ENABLE"
+                default n
+        endif
+    endif
+
+    menuconfig CH3_ENABLE
+        depends on CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+        bool "Channel 3 enable"
+        default n
+
+    if CH3_ENABLE
+        config CH3_MAX_WIDTH
+            int "CH3 Max Width   (Range 16 - 1024, Align by 16)"
+            default 0
+
+        config CH3_MAX_HEIGHT
+            int "CH3 Max Height  (Range 16 - 4096, Align by 16)"
+            default 0
+
+        if CONFIG_ARCH_FH8862
+            config CH3_WIDTH
+                int "CH3 Width   (Range 16 - 1024, Align by 16)"
+                range 16 1024
+                default 768
+        endif
+
+        if CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            config CH3_WIDTH
+                int "CH3 Width   (Range 16 - 1024, Align by 16)"
+                range 16 1024
+                default 512
+        endif
+
+        if CONFIG_ARCH_FH8862
+            config CH3_HEIGHT
+                int "CH3 Height  (Range 16 - 4096, Align by 16)"
+                range 16 4096
+                default 448
+        endif
+
+        if CONFIG_ARCH_FH885xV310 || CONFIG_ARCH_FH885xV300
+            config CH3_HEIGHT
+                int "CH3 Height  (Range 16 - 4096, Align by 16)"
+                range 16 4096
+                default 288
+        endif
+
+        choice
+            prompt "CH3 YUV STYLE"
+            default FH_CH3_USING_RGB888
+
+            config FH_CH3_USING_SCAN
+                depends on CONFIG_ARCH_FH8862
+                bool "VOMODE SCAN(NV12)"
+
+            config FH_CH3_USING_NV16
+                depends on CONFIG_ARCH_FH8862
+                bool "VOMODE SCAN(NV16)"
+
+            config FH_CH3_USING_RRGGBB
+                depends on CONFIG_ARCH_FH8862
+                bool "VOMODE RRGGBB"
+
+            config FH_CH3_USING_RGB888
+                bool "VOMODE RGB888"
+        endchoice
+
+        config CH3_BUFNUM
+            int "CH3 buffer number"
+            default 3
+
+        config NN_ENABLE_G0
+            bool "NN ENABLE"
+            default n
+    endif
+
+choice
+    prompt "Mjpeg Bitrate Control Type"
+    default FH_UVC_USING_SAMPLE_MJPEG_FIXQP
+
+    config FH_UVC_USING_SAMPLE_MJPEG_VBR
+        bool "VBR"
+
+    config FH_UVC_USING_SAMPLE_MJPEG_FIXQP
+        bool "Fix QP"
+endchoice
+
+choice
+    prompt "H264 Bitrate Control Type"
+    default FH_UVC_USING_SAMPLE_H264_VBR
+
+    config FH_UVC_USING_SAMPLE_H264_VBR
+        bool "VBR"
+
+    config FH_UVC_USING_SAMPLE_H264_FIXQP
+        bool "Fix QP"
+
+    config FH_UVC_USING_SAMPLE_H264_CBR
+        bool "CBR"
+
+    config FH_UVC_USING_SAMPLE_H264_AVBR
+        bool "AVBR"
+
+    config FH_UVC_USING_SAMPLE_H264_CVBR
+        bool "CVBR"
+
+    config FH_UVC_USING_SAMPLE_H264_QVBR
+        bool "QVBR"
+endchoice
+
+choice
+    prompt "H265 Bitrate Control Type"
+    default FH_UVC_USING_SAMPLE_H265_VBR
+
+    config FH_UVC_USING_SAMPLE_H265_VBR
+        bool "VBR"
+
+    config FH_UVC_USING_SAMPLE_H265_FIXQP
+        bool "Fix QP"
+
+    config FH_UVC_USING_SAMPLE_H265_CBR
+        bool "CBR"
+
+    config FH_UVC_USING_SAMPLE_H265_AVBR
+        bool "AVBR"
+
+    config FH_UVC_USING_SAMPLE_H265_CVBR
+        bool "CVBR"
+
+    config FH_UVC_USING_SAMPLE_H265_QVBR
+        bool "QVBR"
+endchoice
+
+endmenu
+
+
+
+config APP_USB_DEVICE_UVC
+    bool "Enable to use device as usb webcam"
+    default n
+
+config APP_USB_DEVICE_UAC
+    bool "Enable to use device as usb audio"
+    default n
+
+config APP_USB_DEVICE_CDC
+    bool "Enable to use device as usb cdc"
+    default n
+
+config APP_USB_DEVICE_HID
+    bool "Enable usb hid device demo"
+    default n
+
+if APP_USB_DEVICE_UVC
+        config UVC_DOUBLE_STREAM
+            bool "enable double uvc stream device"
+            default n
+endif
+config UVC_SUPPORT_WINDOWS_HELLO_FACE
+    depends on UVC_DOUBLE_STREAM
+    bool "windows hello face authentication support"
+    default n
+
+if APP_USB_DEVICE_UAC
+    config ENABLE_SPEAKER_DESC
+        bool "Enable uac speaker"
+        default n
+endif
+
+config FH_APP_USING_COOLVIEW
+    bool "Open Coolview"
+    default n
+
+    if FH_APP_USING_COOLVIEW
+    choice
+        prompt "Select Coolview type"
+        default FH_APP_CDC_COOLVIEW
+
+        config FH_APP_TCP_COOLVIEW
+        bool "using tcp coolview"
+
+        config FH_APP_CDC_COOLVIEW
+        bool "using usb_vcom coolview"
+    endchoice
+    endif
+
+config FH_APP_USING_HEX_PARA
+    bool "using uvc flash option"
+    default n
+
+config FH_APP_THREAD_PRIORITY
+    int "App Thread Priority"
+    default 130
+
+menuconfig FH_APP_OPEN_OVERLAY
+    bool "Open Overlay"
+    default n
+
+    if FH_APP_OPEN_OVERLAY
+        config FH_APP_OVERLAY_LOGO
+            bool "Logo"
+            default n
+
+        config FH_APP_OVERLAY_TOSD
+            bool "Tosd"
+            default y
+    endif
+
+config NN_DRAW_BOX
+    select FH_APP_OPEN_OVERLAY
+    bool "nn draw & save enable"
+    default n
+
+if (NN_ENABLE_G0)
+    choice
+        prompt "FH NNA APP List"
+        default FH_APP_OPEN_NN_C2D
+
+        config FH_APP_OPEN_NN_DETECT
+            bool "Do Human Detect"
+
+        config FH_APP_OPEN_NN_C2D
+            bool "Do Human & car Detect"
+
+        config FH_APP_OPEN_NN_FACE
+            bool "Do face Detect"
+    endchoice
+endif

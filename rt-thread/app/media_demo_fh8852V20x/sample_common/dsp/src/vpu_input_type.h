@@ -1,0 +1,21 @@
+#ifndef __VPU_INPUT_TYPE_H__
+#define __VPU_INPUT_TYPE_H__
+
+#ifdef VPU_MODE_ISP_G0
+#define VPU_INMODE_TYPE_G0 VPU_MODE_ISP
+#endif
+
+#ifdef VPU_MODE_MEM_G0
+#define VPU_INMODE_TYPE_G0 VPU_MODE_MEM
+#endif
+
+
+#ifdef VPU_MODE_ISP_G1
+#define VPU_INMODE_TYPE_G1 VPU_MODE_ISP
+#endif
+
+#ifdef VPU_MODE_MEM_G1
+#define VPU_INMODE_TYPE_G1 VPU_MODE_MEM
+#endif
+
+#endif /* __VPU_INPUT_TYPE_H__ */

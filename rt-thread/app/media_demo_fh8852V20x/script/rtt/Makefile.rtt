@@ -1,0 +1,305 @@
+SDKROOT?=~/work/Moria
+
+include $(SDKROOT)/build/config.mk
+-include .config
+
+all:
+
+SAMPNAME := $(shell basename `pwd`)
+
+SAMP_SRCS := $(wildcard components/libdbi_over_tcp/src/*.c)
+LOCAL_CFLAGS := -Icomponents/
+LOCAL_CFLAGS += -I$(shell pwd)
+LOCAL_CFLAGS += -D__RTTHREAD_OS__
+
+ifeq ($(CONFIG_CONFIG_ARCH_FH8636_FH8852V20X), y)
+export CONFIG_ARCH_FH8636_FH8852V20X = y
+ifeq ($(CONFIG_CONFIG_CHIP_FH8626V200), y)
+export CONFIG_CONFIG_CHIP_FH8626V200 = y
+export chip = FH8626V200
+else
+export CONFIG_CONFIG_CHIP_FH8626V200 = n
+export chip = FH8636_FH8852V20X
+endif
+else
+export CONFIG_ARCH_FH8636_FH8852V20X = n
+endif
+
+SAMP_SRCS += $(wildcard components/libdmc/src/*.c)
+# LOCAL_CFLAGS += -Icomponents/libdmc/inc
+
+SAMP_SRCS += $(wildcard components/libmisc/src/*.c)
+# LOCAL_CFLAGS += -Icomponents/libmisc/inc
+
+SAMP_SRCS += $(wildcard components/libmjpeg_over_http/src/*.c)
+# LOCAL_CFLAGS += -Icomponents/libmjpeg_over_http/inc
+
+SAMP_SRCS += $(wildcard components/libpes/src/libpes.c)
+# LOCAL_CFLAGS += -Icomponents/libpes/inc
+ifeq ($(CONFIG_FH_APP_USING_SRT), y)
+LOCAL_CFLAGS += -D__FH_USING_SRT__
+endif
+
+SAMP_SRCS += $(wildcard components/librect_merge_by_gaus/src/*.c)
+# LOCAL_CFLAGS += -Icomponents/librect_merge_by_gaus/inc
+
+SAMP_SRCS += $(wildcard components/librtsp/src/*.c)
+# LOCAL_CFLAGS += -Icomponents/librtsp/inc
+
+SAMP_SRCS += $(wildcard components/libscaler/src/*.c)
+# LOCAL_CFLAGS += -Icomponents/libscaler/inc
+
+SAMP_SRCS += $(wildcard startup/*.c)
+
+ifeq ($(CONFIG_FH_FAST_BOOT), y)
+
+LOCAL_CFLAGS += -Isample_common
+LOCAL_CFLAGS += -I./
+
+SAMP_SRCS += $(wildcard sample_common/dsp/src/*.c)
+# LOCAL_CFLAGS += -Isample_common/dsp/inc
+
+else
+
+SAMP_SRCS += $(wildcard sample_common/bgm/src/*.c)
+LOCAL_CFLAGS += -Isample_common
+LOCAL_CFLAGS += -I./
+
+SAMP_SRCS += $(wildcard sample_common/dsp/src/*.c)
+# LOCAL_CFLAGS += -Isample_common/dsp/inc
+
+SAMP_SRCS += $(wildcard sample_common/isp/src/*.c)
+# LOCAL_CFLAGS += -Isample_common/isp/inc
+
+SAMP_SRCS += $(wildcard sample_common/bind/src/*.c)
+
+SAMP_SRCS += $(wildcard sample_common/isp/src/start_sensor/start_sensor_v1.c)
+SAMP_SRCS += $(wildcard sample_common/isp/src/start_sensor/start_sensor_v2.c)
+
+endif
+
+LOCAL_LIBS += -lm -lsensor_rtt -lvb_mpi_arm_rtt -lnna_rtt
+
+ifeq ($(CONFIG_FH_APP_OPEN_AUDIO), y)
+SAMP_SRCS += $(wildcard sample_common/audio/*.c)
+endif
+
+ifneq (, $(findstring y, $(CONFIG_FH_APP_OPEN_MOTION_DETECT)$(CONFIG_FH_APP_OPEN_RECT_MOTION_DETECT)$(CONFIG_FH_APP_OPEN_COVER_DETECT)))
+SAMP_SRCS += $(wildcard sample_common/motion_and_cover/*.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_OVERLAY), y)
+SAMP_SRCS += $(wildcard sample_common/overlay/*.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_VENC), y)
+SAMP_SRCS += $(wildcard sample_common/venc/*.c)
+endif
+
+NN_ENABLE = 0
+ifeq ($(CONFIG_NN_ENABLE_G0), y)
+NN_ENABLE = 1
+else ifeq ($(CONFIG_NN_ENABLE_G1), y)
+NN_ENABLE = 1
+else ifeq ($(CONFIG_NN_ENABLE_G2), y)
+NN_ENABLE = 1
+endif
+
+ifeq ($(NN_ENABLE), 1)
+LOCAL_LIBS += -lm -lnnpost_rtt
+
+ifeq ($(CONFIG_FH_APP_OPEN_NN_DETECT), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_NN_C2D), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_NN_FACE), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_FACE_CAPTURE), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_capture.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_FACE_EVALUATION), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_evaluation.c)
+LOCAL_LIBS += -lfh_fsnap_arm_rtt
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_FACE_RECGNITION), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_recgnition.c)
+LOCAL_LIBS += -lfh_frecg_arm_rtt -lfh_fsnap_arm_rtt
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_OBJECT_TRACK), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_obj_track.c)
+LOCAL_LIBS += -ltrack_arm_rtt
+endif
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_ISP_STRATEGY_DEMO), y)
+SAMP_SRCS += $(wildcard sample_common/isp_strategy/*.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_IVS), y)
+SAMP_SRCS += $(wildcard sample_common/ivs_demo/*.c)
+LOCAL_LIBS += -ltrip_area_arm_rtt -lm -ltrack_arm_rtt
+endif
+
+SAMP_SRCS += $(wildcard vlcview/*.c)
+
+# sensor libs directory
+# for HL and later, no multi-sensor!!!
+ifeq ($(CONFIG_FH_USING_MULTI_SENSOR),y)
+    LDFLAGS += -L$(SDKROOT)/lib/$(SOC_LINK)/lib/sensors/multiple
+else
+    LDFLAGS += -L$(SDKROOT)/lib/$(SOC_LINK)/lib/sensors
+endif
+
+# !!!! ATTENTION !!!!
+# for HL and later, MUST add local link options: -Wl,-u,$(SENSOR_NAME)_sensor_if
+
+DUMMY_SENSOR_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_DUMMY_SENSOR_G0),y)
+DUMMY_SENSOR_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_DUMMY_SENSOR_G1),y)
+DUMMY_SENSOR_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_DUMMY_SENSOR_G2),y)
+DUMMY_SENSOR_ENABLE = 1
+endif
+ifeq ($(DUMMY_SENSOR_ENABLE),1)
+LOCAL_LIBS += -ldummy_sensor_rtt
+LOCAL_LINKFLAGS += -Wl,-u,dummy_sensor_sensor_if
+endif
+
+
+OVOS02K_MIPI_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_OVOS02K_MIPI_G0),y)
+OVOS02K_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS02K_MIPI_G1),y)
+OVOS02K_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS02K_MIPI_G2),y)
+OVOS02K_MIPI_ENABLE = 1
+endif
+ifeq ($(OVOS02K_MIPI_ENABLE),1)
+LOCAL_LIBS += -lovos02k_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ovos02k_mipi_sensor_if
+endif
+
+OVOS02D_MIPI_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_OVOS02D_MIPI_G0),y)
+OVOS02D_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS02D_MIPI_G1),y)
+OVOS02D_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS02D_MIPI_G2),y)
+OVOS02D_MIPI_ENABLE = 1
+endif
+ifeq ($(OVOS02D_MIPI_ENABLE),1)
+LOCAL_LIBS += -lovos02d_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ovos02d_mipi_sensor_if
+endif
+
+OVOS05_MIPI_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_OVOS05_MIPI_G0),y)
+OVOS05_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS05_MIPI_G1),y)
+OVOS05_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS05_MIPI_G2),y)
+OVOS05_MIPI_ENABLE = 1
+endif
+ifeq ($(OVOS05_MIPI_ENABLE),1)
+LOCAL_LIBS += -lovos05_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ovos05_mipi_sensor_if
+endif
+
+OVOS04C10_MIPI_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_OVOS04C10_MIPI_G0),y)
+OVOS04C10_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS04C10_MIPI_G1),y)
+OVOS04C10_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS04C10_MIPI_G2),y)
+OVOS04C10_MIPI_ENABLE = 1
+endif
+ifeq ($(OVOS04C10_MIPI_ENABLE),1)
+LOCAL_LIBS += -lovos04c10_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ovos04c10_mipi_sensor_if
+endif
+
+OVOS08_MIPI_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_OVOS08_MIPI_G0),y)
+OVOS08_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS08_MIPI_G1),y)
+OVOS08_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_OVOS08_MIPI_G2),y)
+OVOS08_MIPI_ENABLE = 1
+endif
+ifeq ($(OVOS08_MIPI_ENABLE),1)
+LOCAL_LIBS += -lovos08_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ovos08_mipi_sensor_if
+endif
+
+IMX415_MIPI_ENABLE = 0
+ifeq ($(CONFIG_FH_USING_IMX415_MIPI_G0),y)
+IMX415_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_IMX415_MIPI_G1),y)
+IMX415_MIPI_ENABLE = 1
+else ifeq ($(CONFIG_FH_USING_IMX415_MIPI_G2),y)
+IMX415_MIPI_ENABLE = 1
+endif
+ifeq ($(IMX415_MIPI_ENABLE),1)
+LOCAL_LIBS += -limx415_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,imx415_mipi_sensor_if
+endif
+
+include $(SDKROOT)/build/apps.mk
+
+distclean: clean clean_hex
+
+clean:
+
+clean_hex:
+	@if [ -e sample_common/isp/src/all_sensor_array.h ]; then rm -f sample_common/isp/src/all_sensor_array.h; fi
+	@if [ -e sample_common/isp/src/all_sensor_hex.bin ]; then rm -f sample_common/isp/src/all_sensor_hex.bin; fi
+
+%_defconfig:
+	@if [ -e script/rtt/defconfig/$@ ];then \
+		cp script/rtt/defconfig/$@ .config; \
+	else \
+		echo "$@ not exists."; \
+	fi
+	@python $(SDKROOT)/build/tools/cfg2hdr.py .config config.h
+	@python script/rtt/menu_verify_rtt.py
+	@chmod +x script/rtt/sensor_hex_rtt.py
+	@script/rtt/sensor_hex_rtt.py config.h $(chip) $(SDKROOT)
+	@chmod 644 script/rtt/sensor_hex_rtt.py
+
+menuconfig: menuconfig_rtt make_sensor_hex
+
+ifeq ($(CONFIG_FH_FAST_BOOT), y)
+menuconfig_rtt:
+	@$(SDKROOT)/build/kconfig-frontends/kconfig-mconf ./script/rtt/Kconfig_fast
+	@python $(SDKROOT)/build/tools/cfg2hdr.py config config.h
+	@python script/rtt/menu_verify_rtt.py
+
+make_sensor_hex:
+	@chmod +x script/rtt/sensor_hex_rtt.py
+	@script/rtt/sensor_hex_rtt.py config.h $(chip) $(SDKROOT)
+	@chmod 644 script/rtt/sensor_hex_rtt.py
+	@cp ./sample_common/isp/src/all_sensor_array.h $(SDKROOT)/platform/fastboot/
+
+else
+menuconfig_rtt:
+	@$(SDKROOT)/build/kconfig-frontends/kconfig-mconf ./script/rtt/Kconfig
+	@python $(SDKROOT)/build/tools/cfg2hdr.py config config.h
+	@python script/rtt/menu_verify_rtt.py
+
+make_sensor_hex:
+	@chmod +x script/rtt/sensor_hex_rtt.py
+	@script/rtt/sensor_hex_rtt.py config.h $(chip) $(SDKROOT)
+	@chmod 644 script/rtt/sensor_hex_rtt.py
+endif
+
+.PHONY: all distclean clean clean_hex %_defconfig

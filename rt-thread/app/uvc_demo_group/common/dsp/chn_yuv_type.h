@@ -1,0 +1,99 @@
+#ifndef __chn_yuv_type_h__
+#define __chn_yuv_type_h__
+
+/*说明; 此文件的目的是定义这三个宏,CH0_YUV_TYPE, CH1_YUV_TYPE, CH2_YUV_TYPE*/
+
+#ifdef FH_CH0_USING_SCAN
+#define CH0_YUV_TYPE VPU_VOMODE_SCAN
+#endif
+
+#ifdef FH_CH0_USING_BLK
+#define CH0_YUV_TYPE VPU_VOMODE_BLK
+#endif
+
+#ifdef FH_CH0_USING_TILE192
+#define CH0_YUV_TYPE VPU_VOMODE_TILE192
+#endif
+
+#ifdef FH_CH0_USING_TILE224
+#define CH0_YUV_TYPE VPU_VOMODE_TILE224
+#endif
+
+#ifdef FH_CH0_USING_TILE256
+#define CH0_YUV_TYPE VPU_VOMODE_TILE256
+#endif
+
+#ifndef CH0_YUV_TYPE
+#define CH0_YUV_TYPE VPU_VOMODE_BLK
+#endif
+
+#ifdef FH_CH1_USING_SCAN
+#define CH1_YUV_TYPE VPU_VOMODE_SCAN
+#endif
+
+#ifdef FH_CH1_USING_BLK
+#define CH1_YUV_TYPE VPU_VOMODE_BLK
+#endif
+
+#ifdef FH_CH1_USING_TILE192
+#define CH1_YUV_TYPE VPU_VOMODE_TILE192
+#endif
+
+#ifdef FH_CH1_USING_TILE224
+#define CH1_YUV_TYPE VPU_VOMODE_TILE224
+#endif
+
+#ifdef FH_CH1_USING_TILE256
+#define CH1_YUV_TYPE VPU_VOMODE_TILE256
+#endif
+
+#ifndef CH1_YUV_TYPE
+#define CH1_YUV_TYPE VPU_VOMODE_BLK
+#endif
+
+#ifdef FH_CH2_USING_SCAN
+#define CH2_YUV_TYPE VPU_VOMODE_SCAN
+#endif
+
+#ifdef FH_CH2_USING_BLK
+#define CH2_YUV_TYPE VPU_VOMODE_BLK
+#endif
+
+#ifdef FH_CH2_USING_TILE192
+#define CH2_YUV_TYPE VPU_VOMODE_TILE192
+#endif
+
+#ifdef FH_CH2_USING_TILE224
+#define CH2_YUV_TYPE VPU_VOMODE_TILE224
+#endif
+
+#ifdef FH_CH2_USING_TILE256
+#define CH2_YUV_TYPE VPU_VOMODE_TILE256
+#endif
+
+#ifdef FH_CH2_USING_RGB888
+#define CH2_YUV_TYPE VPU_VOMODE_RGB888
+#endif
+
+#ifndef CH2_YUV_TYPE
+#define CH2_YUV_TYPE VPU_VOMODE_BLK
+#endif
+
+#ifdef FH_CH3_USING_SCAN
+#define CH3_YUV_TYPE VPU_VOMODE_SCAN
+
+#endif
+
+#ifdef FH_CH3_USING_NV16
+#define CH3_YUV_TYPE VPU_VOMODE_NV16
+#endif
+
+#ifdef FH_CH3_USING_RRGGBB
+#define CH3_YUV_TYPE VPU_VOMODE_RRGGBB
+#endif
+
+#ifdef FH_CH3_USING_RGB888
+#define CH3_YUV_TYPE VPU_VOMODE_RGB888
+#endif
+
+#endif /*__chn_yuv_type_h__*/
