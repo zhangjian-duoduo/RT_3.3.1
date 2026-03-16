@@ -16,44 +16,48 @@
 #ifdef MULTI_SENSOR
 #define DEV_OPEN(a, flag) open(a, flag)
 #define DEV_CLOSE(a) close(a)
-static PWM_CONFIG_DATA g_pwm_data;
+static struct fh_pwm_chip_data g_pwm_data;
 
 // 设置PWM参数
-void FH_PWM_setConfig(FH_PWM_CONF *pwm_conf)
+void FH_PWM_setConfig(struct fh_pwm_chip_data *pwm_conf)
 {
     if (pwm_conf == NULL)
     {
         perror("illegal parameters!!!");
     }
+
+#ifdef __LINUX_OS__
+       memset(&g_pwm_data, 0, sizeof(g_pwm_data));
+#endif
+
+#ifdef __RTTHREAD_OS__
+       rt_memset(&g_pwm_data, 0, sizeof(g_pwm_data));
+#endif
     g_pwm_data.id = pwm_conf->id;
-    g_pwm_data.config.period_ns = pwm_conf->period_ns;
-    g_pwm_data.config.duty_ns = pwm_conf->duty_ns;
-    g_pwm_data.config.delay_ns = pwm_conf->delay_ns;
-    g_pwm_data.config.phase_ns = pwm_conf->phase_ns;
-    g_pwm_data.config.pulses = pwm_conf->pulses;
+    g_pwm_data.config.period_ns = pwm_conf->config.period_ns;
+    g_pwm_data.config.duty_ns = pwm_conf->config.duty_ns;
+    g_pwm_data.config.delay_ns = pwm_conf->config.delay_ns;
+    g_pwm_data.config.phase_ns = pwm_conf->config.phase_ns;
+    g_pwm_data.config.pulses = pwm_conf->config.pulses;
+    g_pwm_data.config.stop = FH_PWM_STOPLVL_KEEP | FH_PWM_STOPCTRL_ATONCE;
 }
 
 #ifdef __LINUX_OS__
 void FH_PWM_Start(void)
 {
     int pwm_fd;
-    unsigned int pwm_mask;
-    pwm_mask = 1 << g_pwm_data.id;
-
     pwm_fd = DEV_OPEN(DEVICE_NAME, O_RDWR | O_SYNC);
     ioctl(pwm_fd, SET_PWM_DUTY_CYCLE, &g_pwm_data);
-    ioctl(pwm_fd, ENABLE_MUL_PWM, &pwm_mask);
+    ioctl(pwm_fd, ENABLE_PWM, &g_pwm_data.id);
     DEV_CLOSE(pwm_fd);
 }
 
 void FH_PWM_Stop(void)
 {
     int pwm_fd;
-    unsigned int pwm_mask;
-    pwm_mask = 1 << g_pwm_data.id;
-
     pwm_fd = DEV_OPEN(DEVICE_NAME, O_RDWR | O_SYNC);
-    ioctl(pwm_fd, DISABLE_MUL_PWM, &pwm_mask);
+    ioctl(pwm_fd, DISABLE_PWM, &g_pwm_data.id);
+    DEV_CLOSE(pwm_fd);
 }
 
 // 初始化PWM
@@ -136,18 +140,34 @@ void FH_PWM_Start(void)
     ioctl(pwm_fd, ENABLE_PWM, &g_pwm_data);
 }
 
+void FH_PWM_Stop(void)
+{
+    int pwm_fd;
+    pwm_fd = DEV_OPEN(DEVICE_NAME, O_RDWR | O_SYNC);
+    ioctl(pwm_fd, DISABLE_PWM, &g_pwm_data);
+    DEV_CLOSE(pwm_fd);
+}
+
 void FH_PWM_Init(int pwmId)
 {
     // 预留选择特定pwm
     //printf("pwmId = %d\n", pwmId);
 }
 
+extern unsigned long long read_pts(void);
+
 void myUsleep(long int us)
 {
-    struct timeval tv;
-    tv.tv_sec = us / 1000000;
-    tv.tv_usec = us % 1000000;
-    select(0, NULL, NULL, NULL, &tv);
+    unsigned long long pts1, pts2;
+
+    pts1 = read_pts();
+
+    while (1)
+    {
+        pts2 = read_pts();
+        if (pts2 - pts1 >= us)
+            break;
+    }
 }
 #endif /*__RTTHREAD_OS__*/
 

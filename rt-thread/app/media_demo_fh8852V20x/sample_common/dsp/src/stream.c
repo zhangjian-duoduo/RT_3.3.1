@@ -43,16 +43,16 @@ static FH_VOID _get_stream_info_type()
     g_stream_info[1].type |= FH_RAW;
 #endif
 
-//     g_stream_info[2].grpid = 2;
-// #ifdef FH_APP_USING_PES_G2
-//     g_stream_info[2].type |= FH_PES;
-// #endif
-// #ifdef FH_APP_USING_RTSP_G2
-//     g_stream_info[2].type |= FH_RTSP;
-// #endif
-// #ifdef FH_APP_RECORD_RAW_STREAM_G2
-//     g_stream_info[2].type |= FH_RAW;
-// #endif
+    g_stream_info[2].grpid = 2;
+#ifdef FH_APP_USING_PES_G2
+    g_stream_info[2].type |= FH_PES;
+#endif
+#ifdef FH_APP_USING_RTSP_G2
+    g_stream_info[2].type |= FH_RTSP;
+#endif
+#ifdef FH_APP_RECORD_RAW_STREAM_G2
+    g_stream_info[2].type |= FH_RAW;
+#endif
 }
 
 FH_SINT32 sample_dmc_init(FH_CHAR *dst_ip, FH_UINT32 port)

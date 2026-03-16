@@ -100,7 +100,7 @@ void print_loadcode_timecost(void)
     rt_kprintf("    speed: %d(KB/s)\n", g_stc_loadsize[CODE_ARC] * 1000 / g_stc_load[CODE_ARC]);
     rt_kprintf("           decompress cost: % 10d\n", g_stc_decompress[CODE_ARC]);
 #endif
-#ifdef CONFIG_ARCH_FH865x
+#if (defined(CONFIG_ARCH_FH865x) || defined(CONFIG_ARCH_FH8636_FH8852V20X) || defined (CONFIG_ARCH_FH885xV310))
     rt_kprintf("             NBG Code cost: % 10d,", g_stc_load[CODE_NBG_FILE]);
     rt_kprintf("    speed: %d(KB/s)\n", g_stc_loadsize[CODE_NBG_FILE] * 1000 / g_stc_load[CODE_NBG_FILE]);
     rt_kprintf("           decompress cost: % 10d\n", g_stc_decompress[CODE_NBG_FILE]);

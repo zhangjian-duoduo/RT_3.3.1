@@ -27,7 +27,7 @@ enum FRQ_RANGE
     R_1200_1299 = 7,
     R_1300_1399 = 6,
     R_1400_1499 = 6,
-
+    R_1500_1999 = 6, // not support , just write here
 };
 
 enum SENSOR_MODE

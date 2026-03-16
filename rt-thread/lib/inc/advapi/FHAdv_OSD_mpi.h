@@ -88,6 +88,13 @@ extern "C" {
 #define FHT_UPDATED_100MSECOND (1<<10) /*微秒变化的时候才更新*/
 #define FHT_UPDATED_50MSECOND (1<<11) /*微秒变化的时候才更新*/
 
+#define FHTEN_OSD_TOSD_Print  (1<<0) /* TOSD类型 */
+#define FHTEN_OSD_GBOX_Print  (1<<1)
+#define FHTEN_OSD_MASK_Print  (1<<2) /* Mask类型 */
+#define FHTEN_OSD_LOGO_Print  (1<<3)
+#define FHTEN_OSD_CIRCLE_Print  (1<<4)
+#define FHTEN_OSD_LayerInfo_Print (1<<5)  /* 打印所有graphv2的状态信息 */
+
 /*OSD时间格式*/
 typedef enum
 {
@@ -121,6 +128,11 @@ typedef enum
     FHTEN_OSD_GBOX_Pixel  = 0, /* Gbox类型 */
     FHTEN_OSD_MASK_Pixel = 1, /* Mask类型 */
 }FHT_OSD_PixelType_e;        /* 自定义位宽配置类型枚举 */
+
+typedef enum
+{
+    FHTEN_OSD_BOX_ONEBUF  = 1 << 0, /* 配置单buf */
+}FHT_OSD_GboxExt_e;        /* 自定义扩展功能配置 */
 
 typedef struct
 {
@@ -352,8 +364,8 @@ typedef struct
 {
     FH_UINT8         nGboxNum;   /*多边形gbox数量*/
     FHT_OSD_Gbox_t  *pGboxcfg; /*gbox配置数组起始地址，数组大小需和nGboxNum对应*/
-    FH_UINT8           nPolygonMaskNum;   /*多边形数量, 这个多边形不填充内部*/
-    FHT_OSD_Polygon_t  *pPolygoncfg; /*多边形mask配置数组起始地址，数组大小需和nPolygonMaskNum对应*/
+    FH_UINT8           nPolygonNum;   /*多边形数量, 这个多边形不填充内部*/
+    FHT_OSD_Polygon_t  *pPolygoncfg; /*多边形配置数组起始地址，数组大小需和nPolygonNum对应*/
     FH_UINT32      max_frame_w;   /* 用于内存分配，仅第一次设置有效, 注意要初始化，不能为随机值, 此结构体仅这里参数有效，成员内部的max_frame_w不生效 */
     FH_UINT32      max_frame_h;   /* 用于内存分配，仅第一次设置有效, 注意要初始化，不能为随机值, 此结构体仅这里参数有效，成员内部的max_frame_h不生效 */
 } FHT_OSD_Gbox_Unitary_t;
@@ -534,7 +546,7 @@ FH_SINT32 FHAdv_Osd_Config_TwinkleTime(FH_SINT32 vpuId, FH_UINT32 chn, FH_UINT32
  *返回值: 0 成功  -1 通道号不对或者配置参数指针为空
  */
 FH_SINT32 FHAdv_Osd_Print_User_Config(FH_UINT32 chn, FHT_OSD_CONFIG_t *pOsdUsrCfg);
-FH_SINT32 FHAdv_Osd_Ex_Print_User_Config(FH_SINT32 vpuId, FH_UINT32 chn, FH_UINT32 reserved);
+FH_SINT32 FHAdv_Osd_Ex_Print_User_Config(FH_SINT32 vpuId, FH_UINT32 chn, FH_UINT32 type);
 /********
  * 函数名：  FHAdv_Osd_SetLogo
  * 函数功能: 设置Grahp logo.
@@ -571,6 +583,22 @@ FH_SINT32 FHAdv_Osd_Ex_SetLogo_Invert(FH_SINT32 vpuId, FH_UINT32 chn, FHT_OSD_Lo
  *
  *******/
 FH_SINT32 FHAdv_Osd_Config_GboxPixel(FH_SINT32 vpuId, FH_UINT32 Color_pixel, FHT_OSD_PixelType_e graph_type);
+
+/********
+ * 函数名：  FHAdv_Osd_Config_GboxExt
+ * 函数功能: 用于Gbox和Mask现有API接口无法适配的扩展功能的实现。须在Gbox或Mask配置之前调用。
+ *          目前可设置buf模式，主要用于FH885xv310、FH8852v201、FH8636、FH8626V200等
+ *           内存紧张的平台将默认双buf改为单buf。
+ * 输入参数: vpuId: vpu group id, 范围： 0 - 256
+ *          chan     vpu通道
+ *          graph_type 要配置的类型，Gbox/Mask
+ *          ExtFlag 要改变的配置：Bit0-强制单buf模式
+ * 输出参数: 无
+ * return:  FH_SUCCESS
+ *          FH_FAILURE
+ *
+ *******/
+FH_SINT32 FHAdv_Osd_Config_GboxExt(FH_SINT32 vpuId, FH_UINT32 chan, FHT_OSD_PixelType_e graph_type, FHT_OSD_GboxExt_e ExtFlag, FH_UINT32 reserved);
 
 /*********
  * 函数名：  FHAdv_Osd_Ex_SetMask

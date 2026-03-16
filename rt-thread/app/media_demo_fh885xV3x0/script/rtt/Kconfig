@@ -135,8 +135,8 @@ menu "APP config"
 			int "Peri Num(0 - 2)"
 			default 1
 	endif
-	
-    menuconfig FH_NNA_APP_SELECT
+
+	menuconfig FH_NNA_APP_SELECT
 		depends on (NN_ENABLE_G0) ||(NN_ENABLE_G1)|| (NN_ENABLE_G2)
 		bool "nna app select"
 		default n
@@ -158,15 +158,65 @@ menu "APP config"
 				select FH_APP_OPEN_OVERLAY
 				bool "Do face Detect"
 
-			config FH_APP_OPEN_WHD
-				bool "Do wave hands detect"
+			config FH_APP_OPEN_LPR
+				select FH_APP_OVERLAY_TOSD
+				bool "Do License Plate Recognition"
+
+			config FH_APP_OPEN_GESTURE_DETECT
+				bool "Do gesture detect"
+
+			config FH_APP_OPEN_PVF_DETECT
+				select FH_APP_OPEN_OVERLAY
+				bool "Do Pvf Detect"
+
+			config FH_APP_OPEN_LPD_DETECT
+				select FH_APP_OVERLAY_TOSD
+				bool "Do Lpd Detect"
+
+			config FH_APP_OPEN_FACE_EVALUATION
+				select FH_APP_OVERLAY_TOSD
+				bool "Do Face Snap"
+
+			config FH_APP_OPEN_FACE_RECGNITION
+				select FH_APP_OVERLAY_TOSD
+				bool "Do Face Recognition"
+
+			config FH_APP_OPNE_ANCHORFREEDET
+				select FH_APP_OVERLAY_TOSD
+				bool "Do Anchorfree Detect"
+
+			config FH_APP_OPEN_FACE_ATTR
+				select FH_APP_OVERLAY_TOSD
+				bool "Do Face Attr"
 		endchoice
+
+		if FH_APP_OPEN_FACE_RECGNITION
+			config FH_FACE_CAPTURE_TH
+			int "Face Capture Thresh"
+			default 550
+
+			config FH_FACE_ROLL_TH
+			int "Face Roll Thresh"
+			default 45
+
+			config FH_FACE_YAW_TH
+			int "Face Yaw Thresh"
+			default 45
+
+			config FH_FACE_PITCH_TH
+			int "Face Pitch Thresh"
+			default 45
+
+			config FH_FACE_REC_MODE
+			int "Face Recgnition Mode(0:Save 1:Recgnition)"
+			default 0
+		endif
 	endif
 endmenu
 
 config MULTI_SENSOR
-          bool "select double sensor"
-		  default n
+	bool "select double sensor"
+	default n
 
 menuconfig VIDEO_GRP0
 	bool "Video Group 0"

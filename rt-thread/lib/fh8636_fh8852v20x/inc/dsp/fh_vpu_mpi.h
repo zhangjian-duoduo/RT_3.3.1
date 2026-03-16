@@ -226,9 +226,34 @@ FH_SINT32 FH_VPSS_Disable(FH_UINT32 grpidx);
 *          非0(失败，详见错误码)
 *   Note:
 *          当通道的输出缓存数量为1帧或者特殊工作模式时,此接口无效。
-*          需要在FH_VPSS_CreateGrp后调用,需要注意在设置通道属性后该配置会失效,需要重新设置。
+*          需要在FH_VPSS_CreateGrp后调用。
+*          使用此接口timeout为0,在配置后下帧生效。
+*          注意若是该grp若会有vb申请不到的问题可能会有每个通道冻结的帧不是同一帧的情况。
 */
 FH_SINT32 FH_VPSS_FreezeVideo(FH_UINT32 grpidx);
+
+/*
+*   Name: FH_VPSS_FreezeVideo_Timeout
+*            视频冻结,视频处理模块将会向后面数据处理模块,不断发送最后一帧的数据.直到调用FH_VPSS_UnfreezeVideo。
+*
+*   Parameters:
+*
+*       [in] FH_UINT32 grpidx
+*            GROUP号
+*
+*       [in] FH_UINT32 timeout_ms
+*            等待时间(ms)
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*   Note:
+*          当通道的输出缓存数量为1帧或者特殊工作模式时,此接口无效。
+*          需要在FH_VPSS_CreateGrp后调用，添加了timeout,在所有通道都已经冻结时返回。
+*          注意若是该grp若会有vb申请不到的问题会在接口内等待成功分配直到超时，此时可能会有每个通道冻结的帧不是同一帧的情况。
+*          注意该通道若是超时也需要调用Unfreeze,因为此时可能有已经成功冻结的通道。
+*/
+FH_SINT32 FH_VPSS_FreezeVideo_Timeout(FH_UINT32 grpidx,FH_UINT32 timeout_ms);
 
 /*
 *   Name: FH_VPSS_UnfreezeVideo
@@ -1075,7 +1100,7 @@ FH_SINT32 FH_VPSS_GetGlbCrop(FH_UINT32 grpidx,FH_VPU_CROP_SEL sel,FH_VPU_CROP * 
 *            通道号
 *
 *       [in]  FH_UINT32 level
-*            滤波等级，0-15,越大越清晰
+*            滤波等级，0-18,越大越清晰
 *
 *   Return:
 *           0(成功)
@@ -1222,7 +1247,7 @@ FH_SINT32 FH_VPSS_FrameBufferUnRegister(FH_UINT32 grpidx,FH_UINT32 chan,FH_MEM_I
 *       [in] FH_UINT32 support_mode
 *            支持的输出类型
 *
-*       [in] FH_UINT32 *blk_size
+*       [out] FH_UINT32 *blk_size
 *            每块内存需要的Byte
 *
 *   Return:
@@ -1453,7 +1478,7 @@ FH_SINT32 FH_VPSS_GetGlbGraphV2(FH_UINT32 grpidx,FH_VPU_LOGOV2 * pstVpugraphinfo
 *       [in] FH_UINT32 chan
 *            通道号
 *
-*       [out]  const FH_VPU_LOGOV2 *pstVpugraphinfo
+*       [in]  const FH_VPU_LOGOV2 *pstVpugraphinfo
 *            图形叠加信息
 *
 *   Return:
@@ -1479,7 +1504,7 @@ FH_SINT32 FH_VPSS_SetChnGraphV2(FH_UINT32 grpidx, FH_UINT32 chan, const FH_VPU_L
 *       [in] FH_UINT32 timeout_ms
 *            接口阻塞时间(ms)
 *
-*       [out]  const FH_VPU_LOGOV2 *pstVpugraphinfo
+*       [in]  const FH_VPU_LOGOV2 *pstVpugraphinfo
 *            图形叠加信息
 *
 *   Return:
@@ -1549,7 +1574,7 @@ FH_SINT32 FH_VPSS_SetChn2LogoSel(FH_UINT32 mode);
 *       [in] FH_UINT32 timeout_ms
 *            接口阻塞时间(ms)
 *
-*       [in] FH_UINT32 isidle
+*       [out] FH_UINT32 * isidle
 *            是否正在被使用
 *
 *   Return:
@@ -1670,29 +1695,43 @@ FH_SINT32 FH_VPSS_SetChnParam(FH_UINT32 grpidx,FH_UINT32 chan,const FH_VPU_CHN_P
 FH_SINT32 FH_VPSS_GetChnParam(FH_UINT32 grpidx,FH_UINT32 chan,FH_VPU_CHN_PARAM *attr);
 
 /*
-*   Name: FH_VPSS_SetChnRotation
-*            设置调用vgs进行旋转的旋转角度
+*   Name: FH_VPSS_GetChnFd
+*            打开一个设备fd，并绑定到通道
 *
 *   Parameters:
 *
 *       [in] FH_UINT32 grpidx
 *            GROUP号
 *
-*       [in] FH_UINT32  chan
+*       [in] FH_UINT32 chan
 *            通道号
 *
-*       [in]  FH_ROTATE_OPS rotate
-*            旋转角度
+*       [out] FH_SINT32 *fd
+*            设备fd
 *
 *   Return:
 *           0(成功)
-*          非0(失败，详见错误码)
-*   Note:
-*          此接口需要在扩展通道进行调用。
-*          需要在FH_VPSS_SetExtChnAttr后调用
-*          各平台支持功能有所差异,详见《视频函数开发参考手册》。
+*          非0(失败)
 */
-FH_SINT32 FH_VPSS_SetChnRotation(FH_UINT32 grpidx,FH_UINT32 chan, FH_ROTATE_OPS rotate);
+FH_SINT32 FH_VPSS_GetChnFd(FH_UINT32 grpidx,FH_UINT32 chan, FH_SINT32 *fd);
+
+/*
+*   Name: FH_VPSS_CloseChnFd
+*            关闭通道绑定的设备fd，并解绑
+*
+*   Parameters:
+*
+*       [in] FH_UINT32 grpidx
+*            GROUP号
+*
+*       [in] FH_UINT32 chan
+*            通道号
+*
+*   Return:
+*           0(成功)
+*          非0(失败)
+*/
+FH_SINT32 FH_VPSS_CloseChnFd(FH_UINT32 grpidx,FH_UINT32 chan);
 
 /*
 *   Name: FH_VPSS_SetChnApcAttr

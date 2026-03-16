@@ -28,7 +28,7 @@
 #include "vlcview.h"
 
 static FH_SINT32 g_sample_running = 0;
-
+#ifndef FH_FAST_BOOT
 FH_SINT32 _vlcview_exit(FH_VOID)
 {
     if (!g_sample_running)
@@ -61,8 +61,45 @@ FH_SINT32 _vlcview_exit(FH_VOID)
 #endif
 
 #if (defined(NN_ENABLE_G0) || defined(NN_ENABLE_G1) || defined(NN_ENABLE_G2)) && defined(FH_NNA_APP_SELECT)
+#if defined(FH_APP_OPEN_NN_C2D) || defined(FH_APP_OPEN_NN_FACE) || defined(FH_APP_OPEN_NN_DETECT) || defined(FH_APP_OPEN_PVF_DETECT) || defined(FH_APP_OPEN_LPD_DETECT)
     sample_fh_nn_obj_detect_stop();
     printf("=====sample_fh_nn_obj_detect_stop=====\n");
+#endif
+
+#ifdef FH_APP_OPEN_FACE_CAPTURE
+
+#endif
+
+#if defined(FH_APP_OPEN_FACE_RECGNITION)
+    sample_face_rec_stop();
+    printf("=====sample_face_rec_stop=====\n");
+#endif
+
+#if defined FH_APP_OPEN_LPR
+    sample_fh_nn_lpr_detect_stop();
+    printf("=====sample_fh_nn_lpr_detect_stop=====\n");
+#endif
+
+#if defined FH_APP_OPEN_GESTURE_DETECT
+    sample_gesture_stop();
+    printf("=====sample_gesture_stop=====\n");
+#endif
+
+#if defined FH_APP_OPEN_FACE_EVALUATION
+    sample_face_snap_stop();
+    printf("=====sample_face_snap_stop=====\n");
+#endif
+
+#if defined FH_APP_OPEN_FACE_ATTR
+    sample_fh_nn_face_attr_stop();
+    printf("=====sample_fh_nn_face_attr_stop=====\n");
+#endif
+
+#if defined FH_APP_OPNE_ANCHORFREEDET
+    sample_fh_nn_anchorfreeDet_stop();
+    printf("=====sample_fh_nn_anchorfreeDet_stop=====\n");
+#endif
+
 #endif
 
 #ifdef FH_APP_OPEN_WHD
@@ -177,6 +214,10 @@ FH_SINT32 _vlcview(FH_CHAR *dst_ip, FH_UINT32 port)
     {
         goto err_exit;
     }
+#ifdef FH_APP_OPEN_VISE
+       sample_common_ViseStart();
+       printf("=====sample_common_ViseStart=====\n");
+#endif
     /************************************************
       step  11: init data-manage-center which is used to dispatch stream...
      ************************************************/
@@ -203,7 +244,41 @@ FH_SINT32 _vlcview(FH_CHAR *dst_ip, FH_UINT32 port)
       step  17: do nn human detect
      ******************************************/
 #if (defined(NN_ENABLE_G0) || defined(NN_ENABLE_G1) || defined(NN_ENABLE_G2)) && defined(FH_NNA_APP_SELECT)
+#if defined(FH_APP_OPEN_NN_C2D) || defined(FH_APP_OPEN_NN_FACE) || defined(FH_APP_OPEN_NN_DETECT) || defined(FH_APP_OPEN_PVF_DETECT) || defined(FH_APP_OPEN_LPD_DETECT)
     sample_fh_nn_obj_detect_start();
+    printf("=====sample_fh_nn_obj_detect_start=====\n");
+#endif
+
+#if defined(FH_APP_OPEN_FACE_RECGNITION)
+    sample_face_rec_start();
+    printf("=====sample_face_rec_start=====\n");
+#endif
+
+#if defined FH_APP_OPEN_LPR
+    sample_fh_nn_lpr_detect_start();
+    printf("=====sample_fh_nn_lpr_detect_start=====\n");
+#endif
+
+#if defined FH_APP_OPEN_GESTURE_DETECT
+    sample_gesture_start();
+    printf("=====sample_gesture_start=====\n");
+#endif
+
+#if defined FH_APP_OPEN_FACE_EVALUATION
+    sample_face_snap_start();
+    printf("=====sample_face_snap_start=====\n");
+#endif
+
+#if defined FH_APP_OPEN_FACE_ATTR
+    sample_fh_nn_face_attr_start();
+    printf("=====sample_fh_nn_face_attr_start=====\n");
+#endif
+
+#if defined FH_APP_OPNE_ANCHORFREEDET
+    sample_fh_nn_anchorfreeDet_start();
+    printf("=====sample_fh_nn_anchorfreeDet_start=====\n");
+#endif
+
 #endif
 
 #ifdef FH_APP_OPEN_WHD
@@ -213,6 +288,7 @@ FH_SINT32 _vlcview(FH_CHAR *dst_ip, FH_UINT32 port)
 
 #ifdef FH_APP_OPEN_IVS
     sample_ivs_start();
+    printf("=====sample_ivs_start=====\n");
 #endif
 
 #ifdef FH_APP_OPEN_OVERLAY
@@ -258,3 +334,45 @@ err_exit:
     _vlcview_exit();
     return -1;
 }
+#else
+FH_SINT32 _vlcview_exit(FH_VOID)
+{
+    if (!g_sample_running)
+    {
+        printf("vlcview is not running!\n");
+        return 0;
+    }
+
+    sample_common_stop_get_stream();
+
+    sample_common_dmc_deinit();
+
+    g_sample_running = 0;
+
+    return 0;
+}
+
+extern FH_SINT32 fbv_dmc_init(FH_CHAR *dst_ip, FH_UINT32 port, FH_SINT32 max_channel_no);
+extern FH_SINT32 fbv_common_start_get_stream(FH_VOID);
+FH_SINT32 _vlcview(FH_CHAR *dst_ip, FH_UINT32 port)
+{
+    if (g_sample_running)
+    {
+        printf("vlcview is running!\n");
+        return 0;
+    }
+
+    g_sample_running = 1;
+
+    /************************************************
+      step  1: init data-manage-center which is used to dispatch stream...
+     ************************************************/
+    fbv_dmc_init(dst_ip, port, 1);
+
+    /******************************************
+      step  2: get stream, then send to data manager..
+     ******************************************/
+    fbv_common_start_get_stream();
+    return 0;
+}
+#endif

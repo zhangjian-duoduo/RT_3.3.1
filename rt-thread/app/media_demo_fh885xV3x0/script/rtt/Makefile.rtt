@@ -117,6 +117,18 @@ ifeq ($(CONFIG_FH_APP_OPEN_NN_DETECT), y)
 SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
 endif
 
+ifeq ($(CONFIG_FH_APP_OPEN_PVF_DETECT), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_LPD_DETECT), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
+endif
+
+ifeq ($(CONFIG_FH_APP_OPNE_ANCHORFREEDET), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_anchorfreeDet.c)
+endif
+
 ifeq ($(CONFIG_FH_APP_OPEN_NN_FACE), y)
 SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_detect.c)
 endif
@@ -126,7 +138,7 @@ SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_capture.c)
 endif
 
 ifeq ($(CONFIG_FH_APP_OPEN_FACE_EVALUATION), y)
-SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_evaluation.c)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_snap.c)
 LOCAL_LIBS += -lfh_fsnap_arm_rtt
 endif
 
@@ -139,6 +151,22 @@ ifeq ($(CONFIG_FH_APP_OPEN_OBJECT_TRACK), y)
 SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_obj_track.c)
 LOCAL_LIBS += -ltrack_arm_rtt
 endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_LPR), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_lpr.c)
+LOCAL_LIBS += -lfh_lpmerge_arm_rtt -lfh_lprectify_arm_rtt
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_GESTURE_DETECT), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_gesture_detect.c)
+LOCAL_LIBS += -lalgo_arm_rtt
+endif
+
+ifeq ($(CONFIG_FH_APP_OPEN_FACE_ATTR), y)
+SAMP_SRCS += $(wildcard sample_common/fh_nn_detect/sample_nna_face_attr.c)
+LOCAL_LIBS += -lfh_falign_arm_rtt
+endif
+
 endif
 
 ifeq ($(CONFIG_FH_APP_OPEN_ISP_STRATEGY_DEMO), y)
@@ -167,6 +195,21 @@ endif
 
 # !!!! ATTENTION !!!!
 # for HL and later, MUST add local link options: -Wl,-u,$(SENSOR_NAME)_sensor_if
+
+ifeq ($(CONFIG_FH_USING_OVOS02K_MIPI),y)
+LOCAL_LIBS += -lovos02k_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ovos02k_mipi_sensor_if
+endif
+
+ifeq ($(CONFIG_FH_USING_PS5270_MIPI),y)
+LOCAL_LIBS += -lps5270_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,ps5270_mipi_sensor_if
+endif
+
+ifeq ($(CONFIG_FH_USING_GC2083_MIPI),y)
+LOCAL_LIBS += -lgc2083_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,gc2083_mipi_sensor_if
+endif
 
 DUMMY_SENSOR_ENABLE = 0
 ifeq ($(CONFIG_FH_USING_DUMMY_SENSOR_G0),y)
@@ -305,7 +348,11 @@ make_sensor_hex:
 	@chmod +x script/rtt/sensor_hex_rtt.py
 	@script/rtt/sensor_hex_rtt.py config.h $(chip) $(SDKROOT)
 	@chmod 644 script/rtt/sensor_hex_rtt.py
-	@cp ./sample_common/isp/src/all_sensor_array.h $(SDKROOT)/platform/fastboot/
+	@cp ./sample_common/isp/src/all_sensor_array.h $(SDKROOT)/platform/fh8852v310/fastboot
+	@cp ./sample_common/isp/src/all_sensor_array.h $(SDKROOT)/platform/fh8856v310/fastboot
+	@cp ./sample_common/isp/src/all_sensor_array.h $(SDKROOT)/platform/fh8858v310/fastboot
+
+
 
 else
 menuconfig_rtt:

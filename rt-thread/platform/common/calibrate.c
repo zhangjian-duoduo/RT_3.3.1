@@ -13,7 +13,7 @@
 #include <rtthread.h>
 #include <delay.h>
 
-// #define FH_CALIBRATE_DEBUG
+/* #define FH_CALIBRATE_DEBUG */
 
 #if defined(FH_CALIBRATE_DEBUG) /* && defined(RT_DEBUG) */
 #define FH_CALIBRATE_PRINT(fmt, args...)    \
@@ -49,6 +49,9 @@ unsigned long lpj_fine = 0;
 #endif
 #if defined(CONFIG_CHIP_FH8858V200)
 #define PRESET_LPJ      (4000000)   /* TBD, assume 800M */
+#endif
+#if defined(CONFIG_CHIP_FH8852V310) || defined(CONFIG_CHIP_FH8856V310) || defined(CONFIG_CHIP_FH8858V310)
+#define PRESET_LPJ      (8953856)   /* TBD, assume 800M */
 #endif
 #if defined(CONFIG_CHIP_FH8852V200) || defined(CONFIG_CHIP_FH8852V210) \
 || defined(CONFIG_CHIP_FH8856V210) || defined(CONFIG_CHIP_FH8856V200)

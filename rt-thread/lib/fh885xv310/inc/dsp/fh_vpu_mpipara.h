@@ -79,7 +79,7 @@ typedef struct
 	FH_UINT32               work_mode;    // 工作模式 | [ ]
 	FH_UINT32               pool_id;      // vb pool id(非VB模式建议配置为-1UL) | []
 	FH_UINT64               frame_id;     // 帧号 | [ ]
-	FH_UINT64               private[4];   // 私有数据 | []
+	FH_UINT64               private_data[4];   // 私有数据 | []
 }FH_VPU_USER_PIC;
 
 typedef struct
@@ -109,7 +109,7 @@ typedef struct
 	FH_UINT64               time_stamp;   // 时间戳 | [ ]
 	FH_UINT64               frame_id;     // 帧号 | [ ]
 	FH_UINT32               pool_id;      // vb pool id(非VB模式建议配置为-1UL) | []
-	FH_UINT64               private[4];   // 私有数据 | [ ]
+	FH_UINT64               private_data[4];   // 私有数据 | [ ]
 	union
 	{
 		FH_VPU_YC_DATA      frm_blk;      // block格式输出信息 | [ ]
@@ -251,8 +251,8 @@ typedef struct
 typedef struct {
 	FH_UINT32 mode;           // 0:手动模式，用户配置其他参数决定当前相关缩放参数 1:自动模式，驱动基于缩放比自适应旋转缩放参数 | [0-1]
 	FH_UINT32 fix2ds_width;   // fix2ds生效门限，小于此幅面且对应通道输出能力满足时开启，部分通道不支持 | []
-	FH_UINT32 scaler_coeff_h; // 水平方向滤波器系数，从模糊到清晰 | [0-15]
-	FH_UINT32 scaler_coeff_v; // 垂直方向滤波器系数，从模糊到清晰 | [0-15]
+	FH_UINT32 scaler_coeff_h; // 水平方向滤波器系数，从模糊到清晰 | [0-18]
+	FH_UINT32 scaler_coeff_v; // 垂直方向滤波器系数，从模糊到清晰 | [0-18]
 }FH_VPU_SCALER_ATTR;
 
 typedef struct
@@ -268,6 +268,7 @@ typedef struct
 	FH_UINT32      align_patch_mode_h[4];    // 高度四种角度的拉伸模式,在180和90时需要使用0,否则会显示异常　0:拉伸到对齐后幅面 1:拉伸到有效幅面,非对齐部分为冗余图像 | [0-1]
 	FH_UINT32      fcmode;                   // 是否进行插帧 | [0-1]
 	FH_UINT32      close_rls_vb;             // 是否在关闭通道时释放vb(默认释放) | [0-1]
+	FH_UINT32      send_real_pts;            // 是否在通道帧率控制时发送真实时间戳(默认发送修改后的时间戳) | [0-1]
 }FH_VPU_CHN_PARAM;
 #pragma pack()
 #ifdef __cplusplus

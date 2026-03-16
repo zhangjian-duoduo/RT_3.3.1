@@ -11,8 +11,9 @@
 #define FH_LPR_LLEN 8
 #define FH_MAX_EMBEDDING_LEN 128
 #define FH_FACEKPT_MAX_NUM 68
+#define FH_CLASSIFY_MAXK 5
 #define FH_MAX_DIM_NUM 4
-#define FH_MAX_OUTPUT_NUM 4
+#define FH_MAX_OUTPUT_NUM 20
 #define FH_HIGH_DETCT_BASE (0x80000000)
 
 #ifdef __cplusplus
@@ -64,14 +65,18 @@ typedef enum
 	FN_DET_GESTUREREC = 13,     //手势识别 | [ ]
 	FN_DET_LIVREC = 14,         //活体检测 | [ ]
 	FN_DET_C3DET = 15,          //人/车/火焰检测 | [ ]
+	FN_DET_CLASSIFY = 16,       //分类网路 | [ ]
 	FN_DET_TYPE_C4 = 17,        //4分类检测 | [ ]
+	FN_DET_DET_ANCHORFREE = 18, // ancho free | [ ]
+	FN_DET_LINE_ANCHORFREE = 19, // ancho free | [ ]
 	FN_DET_TYPE_DEF_01 = FH_HIGH_DETCT_BASE+1,  //单类型检测 | [ ]
 	FN_DET_TYPE_DEF_02,           // 预留暂未定义 | [ ]
 	FN_DET_TYPE_DEF_03,           //双类型检测 | [ ]
 	FN_DET_TYPE_KPTDET_01,         //特殊类型关键点检测 | [ ]
 	FN_DET_TYPE_KPTDET_LANDMARK,   //特殊类型landmark检测 | [ ]
 	FN_DET_TYPE_SUBREC = FH_HIGH_DETCT_BASE+8,   //物体识别 | [ ]
-	FN_DET_TYPE_ERROR_V0=FH_HIGH_DETCT_BASE+11   //非法检测 | []
+	FN_DET_TYPE_ERROR_V0=FH_HIGH_DETCT_BASE+11,   //非法检测 | []
+	FN_DET_TYPE_DEF_C3DET_EXT=FH_HIGH_DETCT_BASE+15   //人车宠检测 | []
 }FH_TYPE_E;
 
 typedef struct
@@ -217,6 +222,18 @@ typedef struct {
 	FH_FLOAT    prob;                  //probability for actual face,[0.0-1.0]
 }FH_LIV_OUT_T;
 
+typedef struct {
+    int    class_id; 	//类型 [1-1000]
+    float    prob; 		//probability [0.0-1.0]
+}FH_CLASSIFY_T;
+
+typedef struct {
+	FH_UINT64   frame_id;                 //帧序 | [ ]
+	FH_UINT64   time_stamp;             //时间戳信息 | [ ]
+    int topK; 	//类型个数 [1-5]
+    FH_CLASSIFY_T class_info[FH_CLASSIFY_MAXK];
+}FH_CLASSIFY_OUT_T;
+
 typedef struct{
 	FH_UINT64 frame_id;                //帧序 | [ ]
 	FH_UINT64 time_stamp;              //时间戳信息 | [ ]
@@ -234,6 +251,7 @@ typedef struct {
 }FH_FACEKPT_T;
 
 typedef struct{
+	FH_UINT64 frame_id;              //帧序 | [ ]
 	FH_UINT64 time_stamp;            // 时间戳信息 | [ ]
 	FH_UINT8  val_dec[FH_LPR_LLEN];  //解码车牌字符索引 | [ ]
 	FH_FLOAT  prob_dec[FH_LPR_LLEN]; //每个解码字符串概率| [0.0 - 1.0]
@@ -251,6 +269,7 @@ typedef struct{
 		FH_LPR_T           lpr_t;              //车牌识别 | [ ]
 		FH_FACEKPT_T       facekpt_t;          //人脸68关键点 | [ ]
 		FH_GUESTURE_OUT_T  guesture_t;         //手势识别 | [ ]
+		FH_CLASSIFY_OUT_T  classify_t;         //1000分类 | [ ]
 		FH_LIV_OUT_T       liv_out_t;          //活体检测 | [ ]
 	};
 }FH_DETECTION_INFO;

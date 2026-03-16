@@ -641,6 +641,25 @@ FH_SINT32 API_ISP_SetDebugDumpBuf(FH_UINT32 u32IspDevId, ISP_RAW_BUF *raw_buf, i
 *      无
 */
 FH_SINT32 API_ISP_SetViGenCfg(FH_UINT32 u32IspDevId, ISP_VIGEN_CFG *vi_gen);
+/*
+*   Name: API_ISP_DropCnt
+*            丢弃VPU的后N帧数据
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] FH_UINT32 u32DropCnt
+*            下一个帧开始的丢帧数
+*
+*   Return:
+*           0(成功)
+*           非0(失败，详见错误码)
+*   Note:
+*      丢帧生效在下一帧的帧开始时，在一帧当中则实际丢帧要下一帧才开始生效
+*/
+FH_SINT32 API_ISP_DropCnt(FH_UINT32 U32IspDevId, FH_UINT32 u32DropCnt);
 /**SENSOR_CONTROL*/
 
 /*
@@ -2904,6 +2923,28 @@ FH_SINT32 API_ISP_SetGlobeStatCfg(FH_UINT32 u32IspDevId, const GLOBE_STAT_CFG *p
 *       无
 */
 FH_SINT32 API_ISP_GetGlobeStatCfg(FH_UINT32 u32IspDevId, GLOBE_STAT_CFG *pstGlobeStatCfg);
+
+/*
+*   Name: API_ISP_SetAwbInitMode
+*            设置awb上电启动模式
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN]  FH_BOOL awbInitMode
+*            类型为FH_BOOL，值为1时表示开启快启模式 值为0时为普通模式
+*
+*   Return:
+*           0(成功)
+*           非0(失败，详见错误码)
+*
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetAwbInitMode(FH_UINT32 u32IspDevId, FH_BOOL awbInitMode);
+
 #ifdef __cplusplus
 #if __cplusplus
 }

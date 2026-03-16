@@ -13,7 +13,7 @@ extern "C"{
 #define MAX_VMM_NAME_LEN 32
 #define MMAX_MMB_NAME_LEN 16
 
-#define VB_MAX_POOLS 256
+#define VB_MAX_POOLS 128
 #define VB_MAX_COMM_POOLS 16
 #define VB_MAX_MOD_COMM_POOLS 16
 
@@ -62,6 +62,7 @@ typedef enum
     VB_UID_IVE          = 26,		//IVE标识 | [ ]
     VB_UID_NNA          = 27,		//NNA标识 | [ ]
     VB_UID_ISP          = 28,		//ISP标识 | [ ]
+    VB_UID_VISE         = 29,		//VISE标识 | [ ]
     VB_UID_BUTT
 } VB_UID_E;
 
@@ -93,6 +94,7 @@ typedef struct
 #define FY_ERR_VB_NOTREADY          FY_DEF_ERR(FY_ID_VB, EN_ERR_LEVEL_ERROR, EN_ERR_SYS_NOTREADY)
 #define FY_ERR_VB_BUSY              FY_DEF_ERR(FY_ID_VB, EN_ERR_LEVEL_ERROR, EN_ERR_BUSY)
 #define FY_ERR_VB_NOT_PERM          FY_DEF_ERR(FY_ID_VB, EN_ERR_LEVEL_ERROR, EN_ERR_NOT_PERM)
+#define FY_ERR_VB_RPC_COMM          FY_DEF_ERR(FY_ID_VB, EN_ERR_LEVEL_ERROR, EN_ERR_RPC_COMM)
 #define FY_ERR_VB_2MPOOLS           FY_DEF_ERR(FY_ID_VB, EN_ERR_LEVEL_ERROR, EN_ERR_BUTT + 1)
 
 #define FY_TRACE_VB(level,fmt...)   FY_TRACE(level, FY_ID_VB,##fmt)

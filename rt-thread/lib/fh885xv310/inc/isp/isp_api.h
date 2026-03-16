@@ -30,14 +30,6 @@ extern "C"
         }                                                                                                                          \
     } while (0)
 
-#define TRACE_API \
-do\
-{\
-    FH_SINT32 s32Ret = isp_core_trace_interface(u32IspDevId, __func__);\
-    if (s32Ret)\
-        return s32Ret;\
-} while (0);
-
 #define FUNC_DEP __attribute__((deprecated))
 
 enum ISP_HW_MODULE_LIST
@@ -173,7 +165,7 @@ FH_SINT32 FUNC_DEP API_ISP_GetBuffSizeIspOut(FH_UINT32 u32IspDevId, ISP_MEM_INIT
 *            0(正确)
 *           -1(ISP设备驱动打开失败)
 *   Note:
-*       仅使用ISP_MEM_INIT中的幅面信息stPicConf
+*       仅使用ISP_MEM_INIT中的幅面信息stPicConf和ISP输出的方式enIspOutMode
 */
 FH_SINT32 API_ISP_MemInit(FH_UINT32 u32IspDevId, ISP_MEM_INIT* stMemInit);
 /*
@@ -395,6 +387,25 @@ FH_SINT32 API_ISP_DetectPicSize(FH_UINT32 u32IspDevId);
 *       无
 */
 FH_SINT32 API_ISP_Run(FH_UINT32 u32IspDevId);
+/*
+*   Name: API_ISP_SetRunPos
+*            ISP执行策略时机点选择
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN]  ISP_RUN_POS_SEL_E enRunPos
+*            ISP策略时机点选择
+*
+*   Return:
+*            0(正确)，
+*           -1(图像丢失)
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetRunPos(FH_UINT32 u32DevId, ISP_RUN_POS_SEL_E enRunPos);
 /*
 *   Name: API_ISP_AE_AWB_Run
 *            ISP AE&AWB策略处理
@@ -885,6 +896,26 @@ FH_SINT32 API_ISP_GetCoefRawCfg(FH_UINT32 u32IspDevId, ISP_COEF_RAW_CFG *coefRaw
 *       应用层需申请足够的vmm内存
 */
 FH_SINT32 API_ISP_GetCoefRaw(FH_UINT32 u32IspDevId, FH_VOID* pRawBuff, FH_UINT32 u32Size, FH_UINT32 u32FrameCnt, ISP_COEF_RAW_CFG *coefRawCfg);
+/*
+*   Name: API_ISP_SetColorbar
+*            设置isp输出彩条
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN]  FH_UINT32 u32Fps
+*            彩条输出帧率,配0表示关闭彩条输出
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*
+*   Note:
+*        fps有最小值,具体以isp实际输出为准
+*/
+FH_SINT32 API_ISP_SetColorbar(FH_UINT32 u32IspDevId, FH_UINT32 u32Fps);
 /**SENSOR_CONTROL*/
 
 /*
@@ -1042,6 +1073,20 @@ FH_SINT32 API_ISP_SetSensorReg(FH_UINT32 u32IspDevId, FH_UINT16 addr,FH_UINT16 d
 *       无
 */
 FH_SINT32 API_ISP_GetSensorReg(FH_UINT32 u32IspDevId, FH_UINT16 addr, FH_UINT16 *data);
+/*  Name: API_ISP_DropCnt
+*            丢弃VPU的后N帧数据
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] FH_UINT32 u32DropCnt
+*            下一个帧开始的丢帧数
+*   Note:
+*      丢帧生效在下一帧的帧开始时，在一帧当中则实际丢帧要下一帧才开始生效
+*/
+FH_SINT32 API_ISP_DropCnt(FH_UINT32 u32IspDevId, FH_UINT32 u32DropCnt);
 
 /** AE **/
 /*
@@ -1282,6 +1327,66 @@ FH_SINT32 API_ISP_SetAwbDefaultCfg(FH_UINT32 u32IspDevId, AWB_DEFAULT_CFG *pstAw
 *       无
 */
 FH_SINT32 API_ISP_GetAwbDefaultCfg(FH_UINT32 u32IspDevId, AWB_DEFAULT_CFG *pstAwbDefaultCfg);
+/*
+*   Name: API_ISP_SetSmartAECfg
+*            设置smart_ae相关参数
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] SMART_AE_CFG *pstSmartAeCfg
+*            类型为SMART_AE_CFG的结构体指针，详细成员变量请查看SMART_AE_CFG结构体定义。
+*
+*   Return:
+*           0(成功)
+*           非0(失败，详见错误码)
+*
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetSmartAECfg(FH_UINT32 u32IspDevId, SMART_AE_CFG *pstSmartAeCfg);
+/*
+*   Name: API_ISP_GetSmartAECfg
+*            获取smart_ae相关参数
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [OUT] SMART_AE_CFG *pstSmartAeCfg
+*            类型为SMART_AE_CFG的结构体指针，详细成员变量请查看SMART_AE_CFG结构体定义。
+*
+*   Return:
+*           0(成功)
+*           非0(失败，详见错误码)
+*
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_GetSmartAECfg(FH_UINT32 u32IspDevId, SMART_AE_CFG *pstSmartAeCfg);
+/*
+*   Name: API_ISP_GetSmartAeStatus
+*            获取smart_ae状态值
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [OUT] SMART_AE_STATUS *pstSmartAeStatus
+*            类型为SMART_AE_STATUS的结构体指针，详细成员变量请查看SMART_AE_STATUS结构体定义。
+*
+*   Return:
+*           0(成功)
+*           非0(失败，详见错误码)
+*
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_GetSmartAeStatus(FH_UINT32 u32IspDevId, SMART_AE_STATUS *pstSmartAeStatus);
 /*
 *   Name: API_ISP_GetAwbStatus
 *            获取awb状态值
@@ -1597,6 +1702,25 @@ FH_SINT32 API_ISP_GetDpcCfg(FH_UINT32 u32IspDevId, ISP_DPC_CFG *pstDpcCfg);
 *       无
 */
 FH_SINT32 API_ISP_SetLscCfg(FH_UINT32 u32IspDevId, ISP_LSC_CFG *pstLscCfg);
+/*
+*   Name: API_ISP_SetLscCropCfg
+*            配置lsc crop参数
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] ISP_LSC_CROP_CFG *pstLscCropCfg
+*            类型为ISP_LSC_CROP_CFG的结构体指针，详细成员变量请查看ISP_LSC_CROP_CFG结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetLscCropCfg(FH_UINT32 u32IspDevId, ISP_LSC_CROP_CFG *pstLscCropCfg);
 /** NR3D*/
 /*
 *   Name: API_ISP_SetNr3dCfg
@@ -1655,6 +1779,44 @@ FH_SINT32 API_ISP_GetNr3dCfg(FH_UINT32 u32IspDevId, ISP_NR3D_CFG *pstNr3dCfg);
 *       无
 */
 FH_SINT32 API_ISP_SetNr3dCoeffCfg(FH_UINT32 u32IspDevId, ISP_NR3D_COEFF_CFG *pstNr3dCoeffCfg);
+/*
+*   Name: API_ISP_SetNr3dDcRate
+*            降低NR3D的解压缩速率
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] const ISP_NR3D_DC_RATE *pstNr3dCoeffCfg
+*            类型为ISP_NR3D_DC_RATE的结构体指针，详细成员变量请查看ISP_NR3D_DC_RATE结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       一行预期输出的周期数会影响IPB+VPU的工作速率，解压缩的速率只能比预期的慢，所以只推荐在VPU开启循环缓冲的时候使用
+*/
+FH_SINT32 API_ISP_SetNr3dDcRate(FH_UINT32 u32IspDevId, ISP_NR3D_DC_RATE *pstNr3dDcRate);
+/*
+*   Name: API_ISP_SetNr3dDcRate
+*            获取当前NR3D的解压缩速率
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] const ISP_NR3D_DC_RATE *pstNr3dCoeffCfg
+*            类型为ISP_NR3D_DC_RATE的结构体指针，详细成员变量请查看ISP_NR3D_DC_RATE结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_GetNr3dDcRate(FH_UINT32 u32IspDevId, ISP_NR3D_DC_RATE *pstNr3dDcRate);
 /** NR2D*/
 /*
 *   Name: API_ISP_SetNr2dCfg
@@ -1732,7 +1894,27 @@ FH_SINT32 API_ISP_SetNr2dDpcCfg(FH_UINT32 u32IspDevId, ISP_NR2D_DPC_CFG *pstNr2d
 *       无
 */
 FH_SINT32 API_ISP_GetNr2dDpcCfg(FH_UINT32 u32IspDevId, ISP_NR2D_DPC_CFG *pstNr2dDpcCfg);
-
+/** MD*/
+/*
+*   Name: API_ISP_GetMdStat
+*            获取表征MD模块的运动静止程度的数值
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [OUT] ISP_MD_STAT* pstMdStat
+*            类型为ISP_MD_STAT的结构体指针，详细成员变量请查看ISP_MD_STAT结构体定义。
+*
+*   Return:
+*           0
+*
+*   Note:
+*       1. 运动块和静止块的数值总和固定，图像划分成384个区域
+*       2. 运动块越多，说明图像当前运动的可能性越大，反之则越小
+*/
+FH_SINT32 API_ISP_GetMdStat(FH_UINT32 u32IspDevId, ISP_MD_STAT* pstMdStat);
 /** DRC **/
 /*
 *   Name: API_ISP_SetDrcCfg
@@ -2816,6 +2998,25 @@ FH_SINT32 API_ISP_RegisterPicEndCallback(FH_UINT32 u32IspDevId, ispIntCallback c
 */
 FH_SINT32 API_ISP_RegisterIspInitCfgCallback(FH_UINT32 u32IspDevId, ispInitCfgCallback cb);
 /*
+*   Name: API_ISP_SetStrategyInitCfg
+*            初始化所有效果策略参数值（除AE/AWB外），调用阶段是在API_ISP_RegisterIspInitCfgCallback中。
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] const STRATEGY_INIT_CFG *pstStrategyInitCfg
+*            类型为STRATEGY_INIT_CFG的结构体指针，详细成员变量请查看STRATEGY_INIT_CFG结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetStrategyInitCfg(FH_UINT32 u32IspDevId, STRATEGY_INIT_CFG *pstStrategyInitCfg);
+/*
 *   Name: API_ISP_SetBlcInitCfg
 *            初始化BLC所有通道的减DC值，调用阶段是在API_ISP_RegisterIspInitCfgCallback中。
 *
@@ -3259,6 +3460,26 @@ FH_SINT32 API_ISP_SetDeCfg(FH_UINT32 u32IspDevId, ISP_DE_CFG *pstDeCfg);
 FH_SINT32 API_ISP_GetDeCfg(FH_UINT32 u32IspDevId, ISP_DE_CFG *pstDeCfg);
 /**LCE**/
 /*
+*   Name: API_ISP_SetLceWinCfg
+*           设置LCE统计窗参数。
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN] ISP_LCE_WIN_CFG *pstLceWinCfg
+*             类型为ISP_LCE_WIN_CFG的结构体指针，详细成员变量请查看ISP_LCE_WIN_CFG结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       必须满足此条件：(u16PicWidth/(bWinXNumMode==1?16:8)) * (u16PicHeight/(bWinYNumMode==1?16:8)) >= 1024。
+*       在API_ISP_Init()或API_ISP_Resume()之前调用。
+*/
+FH_SINT32 API_ISP_SetLceWinCfg(FH_UINT32 u32IspDevId, ISP_LCE_WIN_CFG *pstLceWinCfg);
+/*
 *   Name: API_ISP_SetLceCfg
 *           设置局部色度参数。
 *
@@ -3296,6 +3517,45 @@ FH_SINT32 API_ISP_SetLceCfg(FH_UINT32 u32IspDevId, ISP_LCE_CFG *pstLceCfg);
 *       无
 */
 FH_SINT32 API_ISP_GetLceCfg(FH_UINT32 u32IspDevId, ISP_LCE_CFG *pstLceCfg);
+/**YCGAIN**/
+/*
+*   Name: API_ISP_SetYCGainCfg
+*           设置rgb2yuv配置矩阵
+*
+*   Parameters:
+*
+*       [IN] FH_UINT32 u32IspDevId
+*            ISP的设备号，通过它选择配置不同的ISP
+*
+*       [OUT] ISP_YC_GAIN_CFG *pstYcGainCfg
+*             类型为ISP_YC_GAIN_CFG的结构体指针，详细成员变量请查看ISP_YC_GAIN_CFG结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetYCGainCfg(FH_UINT32 u32IspDevId, ISP_YC_GAIN_CFG *pstYcGainCfg);
+/*
+*   Name: API_ISP_GetYCGainCfg
+*           获取rgb2yuv配置矩阵
+*
+*   Parameters:
+*
+*       [IN] FH_UINT32 u32IspDevId
+*            ISP的设备号，通过它选择配置不同的ISP
+*
+*       [OUT] ISP_YC_GAIN_CFG *pstYcGainCfg
+*             类型为ISP_YC_GAIN_CFG的结构体指针，详细成员变量请查看ISP_YC_GAIN_CFG结构体定义。
+*
+*   Return:
+*            0(正确)
+*            非0(失败，详见错误码)
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_GetYCGainCfg(FH_UINT32 u32IspDevId, ISP_YC_GAIN_CFG *pstYcGainCfg);
 
 /** STATISTICS **/
 /*
@@ -3784,6 +4044,27 @@ FH_SINT32 API_ISP_DbgDumpSetConfig(FH_UINT32 u32IspDevId, DbgDump_T* dbgCfg);
 *      不支持
 */
 FH_SINT32 API_ISP_SetIspOutVgsCfg(FH_UINT32 u32IspDevId, ISP_ROTATE_OPS_E enIspRotateOps);
+
+/*
+*   Name: API_ISP_SetAwbInitMode
+*            设置awb上电启动模式
+*
+*   Parameters:
+*
+*       [IN]  FH_UINT32 u32IspDevId
+*            ISP的设备号
+*
+*       [IN]  FH_BOOL awbInitMode
+*            类型为FH_BOOL，值为1时表示开启快启模式 值为0时为普通模式
+*
+*   Return:
+*           0(成功)
+*           非0(失败，详见错误码)
+*
+*   Note:
+*       无
+*/
+FH_SINT32 API_ISP_SetAwbInitMode(FH_UINT32 u32IspDevId, FH_BOOL awbInitMode);
 #ifdef __cplusplus
 #if __cplusplus
 }

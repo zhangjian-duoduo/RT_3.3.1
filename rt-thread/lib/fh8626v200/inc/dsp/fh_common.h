@@ -117,6 +117,7 @@ typedef enum
 	FH_OBJ_VPPU    = 11,// VPPU | [ ]
 	FH_OBJ_VDEC    = 12,// H264＆H265视频解码 | [ ]
 	FH_OBJ_JPEGD   = 13,// JPEG解码 | [ ]
+	FH_OBJ_VISE    = 14,// 拼接 | [ ]
 	FH_OBJ_MAX_NUM,
 	FH_BIND_OBJ_ID_DUMMY=0xffffffff,
 }FH_BIND_OBJ_ID;
@@ -169,6 +170,13 @@ typedef struct
 
 typedef struct
 {
+	FH_UINT32           enable;      // 帧率控制使能 | [ ]
+	FH_FRAMERATE        src_fps;     // 输入帧率 | [ ]
+	FH_FRAMERATE        dst_fps;     // 输出帧率 | [ ]
+} FH_FRAME_CTRL;
+
+typedef struct
+{
 	FH_UINT32           y;           // 亮度 | [ ]
 	FH_UINT32           cb;          // 蓝色浓度偏移量 | [ ]
 	FH_UINT32           cr;          // 红色浓度偏移量 | [ ]
@@ -217,7 +225,7 @@ typedef struct
 	FH_UINT64              frame_id;     // 帧号 | [ ]
 	FH_UINT32              pool_id;      // vb pool id(非VB模式建议配置为-1UL) | []
 	FH_BIND_INFO           frame_src;    // 数据来源 | []
-	FH_UINT64              private[4];   // 私有数据 | []
+	FH_UINT64              private_data[4];   // 私有数据 | []
 	FH_SIZE                size_usr;     // 用户配置尺寸(未做对齐) | [ ]
 	union {
 		FH_FRM_YUV_2P      frm_blk;      // block格式输出信息 | [ ]

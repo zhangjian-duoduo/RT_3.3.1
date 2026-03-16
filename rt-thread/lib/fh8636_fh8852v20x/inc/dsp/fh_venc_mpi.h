@@ -523,6 +523,25 @@ FH_SINT32 FH_VENC_ClearRoi(FH_UINT32 chan);
 FH_SINT32 FH_VENC_RequestIDR(FH_UINT32 chan);
 
 /*
+*   Name: FH_VENC_RequestFreshPFrame
+*            申请强制刷新P帧
+*
+*   Parameters:
+*
+*       [in] FH_UINT32 chan
+*            通道号
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*   Note:
+*          - JPEG、MJPEG通道不支持此接口。
+*          - ENC通道非智能编码模式不支持此接口。
+*          - 强制刷新P帧的码率会计入码控统计,连续强制刷新P帧会导致图像变差。
+*/
+FH_SINT32 FH_VENC_RequestFreshPFrame(FH_UINT32 chan);
+
+/*
 *   Name: FH_VENC_GetCurPts
 *            获取当前时间戳
 *

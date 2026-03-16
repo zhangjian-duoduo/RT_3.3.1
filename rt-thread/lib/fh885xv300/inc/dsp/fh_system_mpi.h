@@ -145,6 +145,28 @@ FH_SINT32 FH_SYS_UnBindbyDst(FH_BIND_INFO dst);
 FH_SINT32 FH_SYS_GetBindbyDest(FH_BIND_INFO *src,FH_BIND_INFO dst);
 
 /*
+*   Name: FH_SYS_GetBindbySrc
+*            根据数据源获取接收者的信息
+*
+*   Parameters:
+*
+*       [in] FH_BIND_INFO src
+*            数据源信息
+*
+*       [out] FH_BIND_DST_INFO *dst
+*            数据接收者信息
+*
+*   Return:
+*              0(成功)
+*            非0(失败,详见错误码)
+*
+*   Note:
+*            绑定本身并不限制绑定接收的最大数量,故此处定义的最大数量为可以查询到的最大数量.
+*            当绑定目的数量超过此结构体数组的最大数量时,此接口会存在遗漏的问题,请务必注意适用范围.
+*/
+FH_SINT32 FH_SYS_GetBindbySrc(FH_BIND_INFO src,FH_BIND_DST_INFO *dst);
+
+/*
 *   Name: FH_SYS_GetVersion
 *            获取系统版本信息
 *

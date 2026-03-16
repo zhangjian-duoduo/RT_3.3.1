@@ -140,34 +140,34 @@ FH_UINT32 get_vpu_vi_h(FH_UINT32 grp_id)
 
 FH_UINT32 get_vpu_chn_w(FH_UINT32 grp_id, FH_UINT32 chn_id)
 {
-    FH_SINT32 vi_w = 0;
+    FH_SINT32 vo_w = 0;
 
     if (g_vpu_chn_infos[grp_id][chn_id].chn_out_crop.crop_en)
     {
-        vi_w = g_vpu_chn_infos[grp_id][chn_id].chn_out_crop.vpu_crop_area.u32Width;
+        vo_w = g_vpu_chn_infos[grp_id][chn_id].chn_out_crop.vpu_crop_area.u32Width;
     }
     else
     {
-        vi_w = get_vpu_vi_w(grp_id);
+        vo_w = g_vpu_chn_infos[grp_id][chn_id].width;
     }
 
-    return vi_w;
+    return vo_w;
 }
 
 FH_UINT32 get_vpu_chn_h(FH_UINT32 grp_id, FH_UINT32 chn_id)
 {
-    FH_SINT32 vi_h = 0;
+    FH_SINT32 vo_h = 0;
 
     if (g_vpu_chn_infos[grp_id][chn_id].chn_out_crop.crop_en)
     {
-        vi_h = g_vpu_chn_infos[grp_id][chn_id].chn_out_crop.vpu_crop_area.u32Height;
+        vo_h = g_vpu_chn_infos[grp_id][chn_id].chn_out_crop.vpu_crop_area.u32Height;
     }
     else
     {
-        vi_h = get_vpu_vi_h(grp_id);
+        vo_h = g_vpu_chn_infos[grp_id][chn_id].height;
     }
 
-    return vi_h;
+    return vo_h;
 }
 
 FH_SINT32 sample_common_dsp_init(FH_UINT32 grpid)
@@ -693,6 +693,31 @@ FH_SINT32 sample_common_start_get_stream(FH_VOID)
                 break;
             }
         }
+    }
+
+    return 0;
+}
+
+FH_SINT32 fbv_common_start_get_stream(FH_VOID)
+{
+    pthread_attr_t attr;
+    pthread_t thread_stream;
+    struct sched_param param;
+
+    if (!g_get_stream_running)
+    {
+        g_get_stream_running = 1;
+        g_get_stream_stop = 0;
+
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+#ifdef __RTTHREAD_OS__
+        pthread_attr_setstacksize(&attr, 3 * 1024);
+        param.sched_priority = 130;
+#endif
+        pthread_attr_setschedparam(&attr, &param);
+        pthread_create(&thread_stream, &attr, sample_common_get_stream_proc, &g_get_stream_stop);
+
     }
 
     return 0;

@@ -671,8 +671,9 @@ typedef struct
 
 typedef struct
 {
-	FH_SINT32               qp[7];              // 对应level-1使用的QP | [绝对QP:0-51，相对QP:-51-51]
-	FH_BOOL                 isdeltaqp[7];       // 对应level-1的设置，0:绝对QP,使用用户QP 1:相对QP,在RC QP基础上加减Delta值 | [0-1]
+	FH_UINT8                enable[8];          // enable[level] 对应level的使能，level=0不被使用 0:关闭 1:打开 | [0-1]
+	FH_SINT32               qp[8];              // qp[level] 对应level使用的QP，level=0不被使用 | [绝对QP:0-51，相对QP:-51-51]
+	FH_BOOL                 isdeltaqp[8];       // isdeltaqp[level] 对应level的设置，level=0不被使用 0:绝对QP,使用用户QP 1:相对QP,在RC QP基础上加减Delta值 | [0-1]
 	FH_UINT32               size;               // map 长度, w/64 * h/64 * 16, w/h为64对齐后的宽高 | [ ]
 	FH_PHYADDR              roi_addr;           // map 基地址 | [ ]
 }FH_ROI_MAP;
@@ -731,6 +732,7 @@ typedef enum
 	ENCPARAM_CMD_GOP                 = 13,// I帧间隔 | []
 	ENCPARAM_CMD_FRM_SOURCE          = 14,// 配置通道图像数据源，用于非绑定模式下指定数据来源以获取编码统计,适用于H264&H265 | []
 	ENCPARAM_CMD_ENC_STRATEGY        = 15,// 配置编码策略倾向，适用于H264&H265. | []
+	ENCPARAM_CMD_USR_STRATEGY        = 16,// 无开发人员特殊建议时应调用ENCPARAM_CMD_ENC_STRATEGY | []
 	FH_ENCPARAM_CMD_DUMMY            = 0xffffffff,
 }FH_ENCPARAM_CMD;
 
@@ -838,9 +840,11 @@ typedef struct
 */
 typedef enum
 {
-	FH_ENC_QUALITY_STRATEGY         = 0, // 效果优先编码策略,SDK默认工作配置 | [ ]
+	FH_ENC_QUALITY_STRATEGY         = 0, // 效果优先编码策略 | [ ]
+	FH_ENC_BALANCE_PRO_STRATEGY     = 1, // 个别策略弱于质量优先,但高于平衡策略，本平台SDK默认工作配置 | [ ]
 	FH_ENC_BALANCE_STRATEGY         = 2, // 平衡编码策略 | [ ]
 	FH_ENC_BITRATE_STRATEGY         = 4, // 码率优先编码策略 | [ ]
+	FH_ENC_BITRATE_STRATEGY_EP1     = 5, // 码率优先编码策略, 在4基础上降低图像清晰度和码率 | [ ]
 	FH_ENC_STRATEGY_DUMMY           = 0xffffffff,
 }FH_VENC_STRATEGY_MODE;
 
@@ -848,6 +852,18 @@ typedef struct
 {
 	FH_VENC_STRATEGY_MODE strategy_mode; // 编码策略模式，此为编码器单帧编码底层策略倾向，以低码率等应用还可以结合一些如智能编码,丢帧策略等更宏观面策略 | [ ]
 }ENCPARAM_STRATEGY_CONFIG;
+
+/**
+ * 请直接使用ENCPARAM_CMD_ENC_STRATEGY调整编码策略风格,不要在无非开发人员建议值的情况下自行调用此接口.
+ */
+typedef struct
+{
+	FH_SINT32 ifrm_enhancement_enable[5];            // 细节增强策略配置 | [ ]
+	FH_SINT32 motion_recovery_enhancement_enable[4]; // 运动恢复策略配置 | [ ]
+	FH_SINT32 motion_recovery_param[2];              // 运动恢复参数 | [ ]
+	FH_SINT32 bias_strategy[4];                      // 倾向性策略参数 | [ ]
+	FH_SINT32 low_bitrate_strategy[2];               // 低码率策略参数 | [ ]
+}ENCPARAM_USR_STRATEGY;
 
 typedef union
 {
@@ -868,6 +884,7 @@ typedef union
 	ENCPARAM_GOP                    gop;               // I帧间隔 | []
 	ENCPARAM_FRM_SRC                frm_src;           // 配置通道图像数据源，用于非绑定模式下指定数据来源以获取编码统计,适用于H264&H265 | []
 	ENCPARAM_STRATEGY_CONFIG        enc_strategy;      // 配置编码策略倾向,在销毁重创建通道或者切换编码类型(包括智能非智能之间的切换)后需要重新配置此模式. | []
+	ENCPARAM_USR_STRATEGY           usr_strategy;      // 配置编码策略参数,在销毁重创建通道或者切换编码类型(包括智能非智能之间的切换)后需要重新配置此模式. | []
 }FH_ENC_PARAM_UNION;
 
 typedef struct

@@ -122,6 +122,7 @@ void rt_thread_exit(void)
 #endif
     /* disable interrupt */
     level = rt_hw_interrupt_disable();
+    rt_enter_critical();
 
     _thread_cleanup_execute(thread);
 
@@ -143,6 +144,7 @@ void rt_thread_exit(void)
         rt_thread_defunct_enqueue(thread);
     }
 
+    rt_exit_critical();
     /* enable interrupt */
     rt_hw_interrupt_enable(level);
 

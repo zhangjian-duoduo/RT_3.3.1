@@ -746,6 +746,9 @@ LNKLIBS += -ladvapi_md -ladvapi_isp -ljpeg_rtt
 ifeq ($(CONFIG_ARCH_ARM_CORTEX_A7),y)
 LNKLIBS += -lvb_mpi_arm_rtt
 endif
+ifeq ($(CONFIG_CONFIG_ARCH_FH885xV310), y)
+    LNKLIBS += -lvise_rtt
+endif
 ifneq ($(findstring y, $(CONFIG_CONFIG_CHIP_FH8626V100) $(CONFIG_CONFIG_ARCH_FH8636_FH8852V20X)), )
     LNKLIBS += -ldsp_rtt
 else
@@ -779,13 +782,6 @@ endif
 LNKLIBS += -lm
 
 LNKLIBS += -lnna_rtt -lnnpost_rtt
-
-# if you use sensors other than PS5270 for fastboot
-# modify following link parameters
-ifeq ($(CONFIG_FH_FAST_BOOT), y)
-LDFLAGS += -Wl,-u,ps5270_mipi_sensor_if
-LNKLIBS += -lps5270_mipi_rtt
-endif
 
 # 9. sample
 SAMPLE_DIR =

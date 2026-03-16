@@ -469,19 +469,11 @@ void pthread_exit(void *value)
     /* get pthread data from user data of thread */
     ptd = (_pthread_data_t *)rt_thread_self()->user_data;
 
-    rt_enter_critical();
-    /* disable cancel */
-    ptd->cancelstate = PTHREAD_CANCEL_DISABLE;
     /* set return value */
     ptd->return_value = value;
-    rt_exit_critical();
 
-    _pthread_local_cleanup(ptd);
-
-    /* detach thread */
-    rt_thread_detach(ptd->tid);
-    /* reschedule thread */
-    rt_schedule();
+    /* exit thread */
+    rt_thread_exit();
 }
 RTM_EXPORT(pthread_exit);
 

@@ -50,6 +50,30 @@ struct grp_vpu_info g_vpu_grp_infos[MAX_GRP_NUM] = {
 #endif
 #endif /* VIDEO_GRP1 */
     },
+
+    {
+        .enable = 0,
+        .bgm_enable = 0,
+#if defined(VPU_MODE_ISP_G2)
+        .enable = 1,
+        .channel = 1,
+#ifdef YCMEAN_EN_G2
+        .grp_info.ycmean_ds = YCMEAN_DS_G2,
+        .grp_info.ycmean_en = 1,
+#endif
+        .mode = VPU_INMODE_TYPE_G2,
+#ifdef BGM_ENABLE_G2
+        .bgm_enable = 1,
+        .bgm_ds = BGM_DS_G2,
+#ifdef SAD_ENABLE_G2
+        .sad_enable = 1,
+#endif
+#endif
+#ifdef CPY_ENABLE_G2
+        .cpy_enable = 1,
+#endif
+#endif /* VIDEO_GRP2 */
+    },
 };
 
 struct vpu_channel_info g_vpu_chn_infos[MAX_GRP_NUM][MAX_VPU_CHN_NUM] = {

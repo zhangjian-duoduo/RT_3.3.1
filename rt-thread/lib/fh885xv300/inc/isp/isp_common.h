@@ -49,8 +49,8 @@ typedef enum _TAB_COLOR_CODE {
 } TAB_COLOR_CODE;
 
 typedef enum _CURVE_TYPE_ {
-    CURVE_BUILTIN     = 0x1, // 选用内定曲线
-    CURVE_USER_DEFINE = 0x2, // 选用用户自定义曲线
+    CURVE_BUILTIN     = 0x0, // 选用内定曲线
+    CURVE_USER_DEFINE = 0x1, // 选用用户自定义曲线
     CURVE_TYPE_DUMMY  =0xffffffff,
 } CURVE_TYPE;
 
@@ -112,6 +112,12 @@ typedef enum _COEF_TYPE_ {
     NR2D_COEF = 0x1,// coef类型为nr2d
 } COEF_TYPE;
 
+typedef enum _ISP_RUN_POS_SEL_E
+{
+    ISP_RUN_POS_START = 0,  // API_ISP_Run在帧头唤醒
+    ISP_RUN_POS_END = 1,    // API_ISP_Run在帧尾唤醒
+}ISP_RUN_POS_SEL_E;
+
 typedef struct _ISP_PIC_SIZE_S_
 {
     FH_UINT32 u32Width;     // 输入幅面宽度 | [0~0xffff]
@@ -121,7 +127,7 @@ typedef struct _ISP_PIC_SIZE_S_
 typedef struct _ISP_MEM_INIT_S_
 {
     ISP_OFFLINE_MODE  enOfflineWorkMode; // 当前ISP工作模式，不支持 | [OFFLINE_MODE]
-    ISP_OUT_MODE_E    enIspOutMode;      // ISP输出的方式，不支持 | [ISP_OUT_MODE_E]
+    ISP_OUT_MODE_E    enIspOutMode;      // ISP输出的方式 | [ISP_OUT_MODE_E]
     ISP_OUT_FORMAT_E  enIspOutFmt;       // ISP离线输出的格式，不支持 | [ISP_OUT_FORMAT]
     LUT2D_WORK_MODE_E enLut2dWorkMode;   // Lut缓存分配控制，仅影响内存分配，不支持 | [0~1]
     ISP_PIC_SIZE      stPicConf;         // 幅面配置 | [ISP_PIC_SIZE]
@@ -262,6 +268,35 @@ typedef enum _STAT_SEL_MODULE
     STAT_SEL_AF   = 5,   // FH885XV300不支持
 } STAT_SEL_MODULE;
 
+/**|Smart AE|**/
+typedef struct _SMART_AE_ROI_S_
+{
+    FH_UINT16    u16RectX;        //ROI检测框左上角横坐标,以像素为单位 | [0x0-0xffff]
+    FH_UINT16    u16RectY;        //ROI检测框左上角纵坐标,以像素为单位 | [0x0-0xffff]
+    FH_UINT16    u16RectW;        //ROI检测框横向宽度,以像素为单位 | [0x0-0xffff]
+    FH_UINT16    u16RectH;        //ROI检测框纵向高度,以像素为单位 | [0x0-0xffff]
+    FH_UINT8     u08RectWeight;   //ROI检测框权重，取值范围0-15 | [0x0-0xf]
+}SMART_AE_ROI;
+
+typedef struct _SMART_AE_CFG_S_
+{
+    FH_BOOL      bSmartAeEn;      //智能曝光策略总开关 0：关闭智能曝光策略 1：打开智能曝光策略 | [0x0-0x1]
+    FH_UINT16    u16RatioMin;     //智能曝光系数最大值 0x400表示1倍 | [0x0-0xffff]
+    FH_UINT16    u16RatioMax;     //智能曝光系数最小值 0x400表示1倍 | [0x0-0xffff]
+    FH_UINT16    u16DelayNum;     //智能曝光延迟恢复帧数，值越小，被检测物体离开场景后，恢复到正常曝光的时间越短,最大支持0xfff帧  | [0x0-0xfff]
+    FH_UINT8     u08TargetLuma;   //智能曝光目标亮度 | [0x0-0xff]
+    FH_UINT8     u08Speed;        //智能曝光速度，值越小速率越快，0是最快速率 | [0x0-0xff]
+    FH_UINT8     u08Interval;     //智能曝光策略运行间隔，值为0时表示每帧都运行，值为1时表示隔1帧运行一次曝光调整策略,最大支持15帧间隔 | [0x0-0xf]
+    FH_UINT8     u08RoiNum;       //ROI检测框有效数量，最大支持4个 | [0x0-0x4]
+    SMART_AE_ROI stDetectRoi[4];  //智能曝光检测框坐标配置 | [SMART_AE_ROI]
+}SMART_AE_CFG;
+
+typedef struct _SMART_AE_STATUS_S_
+{
+    FH_UINT8 u08CurrLuma;         // 当前ROI检测框测光亮度 | [0x0-0xff]
+    FH_UINT8 u08OpStatus;         // 当前智能曝光状态 | [0x0-0x2]
+} SMART_AE_STATUS;
+
 /**|AE|**/
 typedef struct _AE_ENABLE_CFG_S_
 {
@@ -290,6 +325,8 @@ typedef struct _AE_INIT_CFG_S_
     FH_UINT32 u32InitExpTime;  // 初始化曝光时间，单位由inttUnitSel决定，暂不支持 | [0x0-0xfffff]
     FH_UINT16 u16InitAgain;    // 初始化sensor增益，U.6，暂不支持 | [0x40-0xffff]
     FH_UINT16 u16InitDgain;    // 初始化isp增益，U.6，暂不支持 | [0x40-0x3ff]
+    FH_BOOL bInitAeFlag;       // 快速启动AE开关控制：0：关闭快速启动AE 1：开启快速启动AE | [0x0-0x1]
+    FH_UINT8 u08InitTolerance; // 初始化曝光的稳定区间，一般比u08Tolerance大, U.4精度 | [0x0-0xff]
 } AE_INIT_CFG;
 
 typedef struct _AE_SPEED_CFG_S_
@@ -381,8 +418,8 @@ typedef struct _AE_DEFAULT_CFG_S_ {
     FH_BOOL bNodeChMode;                    // ae节点变化模式选择：     0:跨节点变化模式; 1:节点连续变化模式 | [0x0-0x1]
     FH_BOOL bSensUpMode;                    // 慢快门模式选择：     0:无极连续降帧; 1:非连续直接降帧 | [0x0-0x1]
     FH_UINT8 u08SensUpPrec;                 // 慢快门非连续降帧精度，值越大降帧分段越多越精确 | [0x0-0xf]
-    FH_UINT16 u16SensUpEnableAgain;         // 降帧启动增益，U.6 (aRouteEn为0时生效，更新时需置位refresh位） | [0x40-0xffff]
-    FH_UINT16 u16SensUpDisableAgain;        // 降帧关闭增益，U.6 (aRouteEn为0时生效，更新时需置位refresh位） | [0x40-0xffff]
+    FH_UINT16 u16SensUpEnableGain;         // 降帧启动增益，U.6 (aRouteEn为0时生效，更新时需置位refresh位) | [0x40-0xffff]
+    FH_UINT16 u16SensUpDisableGain;        // 降帧关闭增益，U.6 (aRouteEn为0时生效，更新时需置位refresh位) | [0x40-0xffff]
     FH_UINT8 u08InttPrec;                   // 曝光精度，固定以行为单位 | [0x0-0xff]
     FH_UINT8 u08InttOffset;                 // 当sensor intt与again存在偏移关系时需要配置曝光时间的偏移，固定以μs为单位 | [0x0-0xff]
 } AE_DEFAULT_CFG;
@@ -679,6 +716,7 @@ typedef struct _ISP_BLC_CFG_S_
     FH_SINT8 s08BlcDeltaRMap[12];// 增益为0db R通道delta值 | [-128~127]
     FH_SINT8 s08BlcDeltaGMap[12];// 增益为0db G通道delta值 | [-128~127]
     FH_SINT8 s08BlcDeltaBMap[12];// 增益为0db B通道delta值 | [-128~127]
+    FH_UINT8 u8BlcPosSel; // Blc位置选择仅线性 0: Crop后 , 1: NR2D后| [0~1]
 } ISP_BLC_CFG;
 /**|GB|**/
 typedef struct _ISP_GB_CFG_S_
@@ -721,13 +759,33 @@ typedef struct _ISP_DPC_CFG_S_
     FH_UINT8 u08SupTwinkleThhMap[12];// 0db闪烁抑制阈值上限 | [0x0~0xff]
     FH_UINT8 u08SupTwinkleThlMap[12];// 0db闪烁抑制阈值下限 | [0x0~0xff]
 } ISP_DPC_CFG;
+
 /**|LSC|**/
 typedef struct _ISP_LSC_CFG_S_
 {
-    FH_BOOL   bLscEn;       // 镜头阴影矫正控制使能 | [0~1]
-    char *    pLscTable;    // 补偿系数 | [0~0xffffffff]
-    char     *pLscTable1;    // 补偿系数1 | [0~0xffffffff]
+    FH_BOOL   bLscEn; // 镜头阴影矫正控制使能 | [0~1]
+    FH_BOOL   bMirrorEn; // lsc表mirror开关使能 | [0~1]
+    FH_BOOL   bFlippEn; // lsc表flip开关使能 | [0~1]
+    FH_BOOL   bTabMergeEn; // 两张lsc表融合开关，仅FH885XV310支持 | [0~1]
+    FH_BOOL   bMergeMode; // 融合模式，当bTabMergeEn=1时有效，0：手动设置融合权重；1：根据色温位置自动设置融合权重 | [0~1]
+    FH_UINT8  u08MergeWeight; // 融合权重，(Table * weight + TableEx * (255 - weight))/255, 当bTabMergeEn=1且bMergeMode=0时有效 | [0~255]
+    FH_UINT8  u08OriginPattern; // origin bayer pattern | [0~3]
+    FH_UINT8  u08InvertPattern; // invert(flip or mirror)后的bayer pattern | [0~3]
+    char *    pLscTable; // 补偿系数表0 | [0~0xffffffff]
+    char *    pLscTableEx; // 补偿系数表1 | [0~0xffffffff]
+    char *    pLscTableEx1; // 补偿系数表2 | [0~0xffffffff]
+    char *    pLscTableEx2; // 补偿系数表3 | [0~0xffffffff]
 } ISP_LSC_CFG;
+
+typedef struct _ISP_LSC_CROP_CFG_S_
+{
+    FH_UINT16  u16LscHeight; //<Lsc原图像高度 | [0~0x1fff]
+    FH_UINT16  u16LscWidth; //<Lsc原图像宽度 | [0~0x1fff]
+    FH_UINT16  u16CropHeight; //<Lsc裁剪图像高度 | [0~0x1fff]
+    FH_UINT16  u16CropWidth; //<Lsc裁剪图像宽度 | [0~0x1fff]
+    FH_UINT16  u16OffsetY; //<Lsc裁剪垂直偏移 | [0~0xfff]
+    FH_UINT16  u16OffsetX; //<Lsc裁剪水平偏移 | [0~0xfff]
+} ISP_LSC_CROP_CFG;
 
 /**|NR3D|**/
 typedef struct _NR3D_STAT_CFG_S_
@@ -781,6 +839,12 @@ typedef struct _ISP_NR3D_COEFF_CFG_
     FH_UINT16 u16CoeffY[27]; // NR3D Coeff 26段映射线的折点纵坐标。Y0<=Y1...<=Y26 | [0~0x3ff]
 } ISP_NR3D_COEFF_CFG;
 
+typedef struct _ISP_NR3D_DC_RATE_
+{
+    FH_UINT16 u16ActWth;    // NR3D实际输出的一行像素点个数 | [0~0xffff]
+    FH_UINT16 u16TarWth;   // NR3D预期一行输出的周期数，NR3D后的模块每行将按照该周期输出,该值和ISP频率有关 | [u16ActWth+1~0xffff]
+} ISP_NR3D_DC_RATE;
+
 /**|LTM|**/
 typedef struct _ISP_LTM_CFG_S_
 {
@@ -810,6 +874,13 @@ typedef struct _ISP_LTM_CFG_S_
     FH_UINT8 u08NlYPreScaler[4];             //(1/16|1/8|1/4|1/2 inttMax)时正常亮度处的亮度比例系数，值越大越亮，U.5， | [0-0x3f]
     FH_UINT8 u08HlYPreScaler[4];             //(1/16|1/8|1/4|1/2 inttMax)时高亮处的亮度比例系数，值越大越亮，U.5， | [0-0x3f]
 } ISP_LTM_CFG;
+/**|MD|**/
+typedef struct _ISP_MD_STAT_S_
+{
+    FH_UINT32         u32MdEn;    //模块使能状态，状态为1时获取到的值为有效 | [0~1]
+    FH_UINT32         u32MdMove;  //模块运动状态统计 | [0~0x180]
+    FH_UINT32         u32MdStill; //模块静止状态统计 | [0~0x180]
+} ISP_MD_STAT;
 /**|NR2D|**/
 typedef struct _ISP_LUT_POINT_S_
 {
@@ -1032,6 +1103,15 @@ typedef struct _ISP_LCE_CFG_S_
     FH_UINT8 u08CGainMap[12];// 0dB时，色度补偿因子U.6 | [0x0~0xff]
     FH_UINT8 u08COffsetMap[12];// 0dB时，色度偏移因子 | [0x0~0xff]
 } ISP_LCE_CFG;
+
+typedef struct _ISP_LCE_WIN_CFG_S_
+{
+    FH_UINT16   u16PicWidth;  // 处理的图像宽度 | [0~0xffff]
+    FH_UINT16   u16PicHeight; // 处理的图像高度 | [0~0xffff]
+    FH_BOOL     bWinXNumMode; // LCE水平统计窗分窗模式：0: 水平统计窗个数为8；1：水平统计窗个数为16 | [0x0~0x1]
+    FH_BOOL     bWinYNumMode; // LCE垂直统计窗分窗模式：0: 垂直统计窗个数为8；1：垂直统计窗个数为16 | [0x0~0x1]
+} ISP_LCE_WIN_CFG;
+
 /**|IE|**/
 typedef struct _ISP_CONTRAST_CFG_S_
 {
@@ -1310,14 +1390,14 @@ typedef struct _AF_PREFILTER_CFG
 {
     FH_BOOL   bPrefilterEn;          // Prefilter使能 | [0~0x1]
     FH_UINT8  u08PrefilterMode;      // Prefilter模式 | [0~0x1]
-    FH_SINT8  s08PreFilterCoe[7];    // 预滤波滤波器系数 | [0~0xf]
+    FH_SINT8  s08PreFilterCoe[5];    // 预滤波滤波器系数 | [-32~31]
     FH_UINT8  u08PreFilterShift;     // 预滤波滤波器移位因子 | [0~0xf]
     FH_UINT16 u16PreFilterMul;       // 预滤波滤波器乘系数 | [0-0x3ff]
 }AF_PREFILTER_CFG;
 
 typedef struct _AF_VFILTER_CFG
 {
-    FH_SINT8  s08VFilterCoef[5];    // 垂直滤波器系数 | [0~0x3f]
+    FH_SINT8  s08VFilterCoef[5];    // 垂直滤波器系数 | [-32~31]
     FH_UINT8  u08VFilterShift;      // 垂直滤波器移位因子 | [0~0xf]
     FH_UINT16 u16VFilterGain;       // 垂直滤波器增益 | [0~0x3ff]
 }AF_VFILTER_CFG;
@@ -1326,8 +1406,8 @@ typedef struct _AF_HFILTER_CFG
 {
     FH_UINT8  u08HFilterGain;       // 水平滤波器增益 | [0~0xff]
     FH_UINT8  u08HFilterShift[7];   // 水平滤波器移位因子 | [0~0xf]
-    FH_UINT16 u16HFilterC[6];       // 水平滤波器滤波器系数C | [0~0x7ff]
-    FH_UINT16 u16HFilterD[6];       // 水平滤波器滤波器系数D | [0~0x7ff]
+    FH_SINT16 s16HFilterC[6];       // 水平滤波器滤波器系数C | [-1024~1023]
+    FH_SINT16 s16HFilterD[6];       // 水平滤波器滤波器系数D | [-1024~1023]
     FH_BOOL   bHFilterEn[3];        // 水平滤波器第1/2/3级滤波器使能 | [0~1]
 }AF_HFILTER_CFG;
 
@@ -1569,6 +1649,29 @@ typedef struct _FC_CFG_S
     FH_UINT16 u16OffsetT; // 纹理信息偏移量 | [0~0xffff]
     FH_UINT16 u16OffsetY; // 亮度信息偏移量 | [0~0xffff]
 } FC_CFG;
+
+/**|YCGAIN|**/
+typedef struct _YC_COEFF_STRUCT_S_
+{
+    FH_SINT16 s12Rcoeff;    //s2.10 rgb2yuv时r通道系数|[0~0xfff]
+    FH_SINT16 s12Gcoeff;    //s2.10 rgb2yuv时g通道系数|[0~0xfff]
+    FH_SINT16 s12Bcoeff;    //s2.10 rgb2yuv时b通道系数|[0~0xfff]
+    FH_SINT16 s12Offset;    //s12 rgb2yuv时偏移|[0~0xfff]
+} YC_COEFF_STRUCT;
+
+typedef struct _ISP_YC_GAIN_STRUCT_S_
+{
+    YC_COEFF_STRUCT Y;    // Y通道系数 | [YC_COEFF_STRUCT]
+    YC_COEFF_STRUCT Cb;   // Cb通道系数 | [YC_COEFF_STRUCT]
+    YC_COEFF_STRUCT Cr;   // Cr通道系数 | [YC_COEFF_STRUCT]
+} ISP_YC_GAIN_STRUCT;
+
+typedef struct _ISP_YC_GAIN_CFG_S_
+{
+    FH_UINT8 u08YcGainMode;          // rgb2yuv的转换方式，0：BT601（默认）;1：BT709;2：用户自定义 | [0~2]
+    ISP_YC_GAIN_STRUCT strYcGain;   // 用户自定义rgb2yuv的转换矩阵系数 | [YC_COEFF_STRUCT]
+} ISP_YC_GAIN_CFG;
+
 /**|STATISTICS|**/
 typedef enum _HIST_MODE
 {
@@ -1739,13 +1842,35 @@ typedef struct _GLOBE_STAT_CFG_S
     STAT_POS_SEL_GL StatPosSel;  // 统计位置 | [0~2]
 } GLOBE_STAT_CFG;
 
+typedef struct _ISP_DEHAZE_STAT_S_ {
+    FH_UINT16 u16R;  // 通道大气光统计R值 | [0x0-0xffff]
+    FH_UINT16 u16G;  // 通道大气光统计R值 | [0x0-0xffff]
+    FH_UINT16 u16B;  // 通道大气光统计R值 | [0x0-0xffff]
+    FH_UINT16 u16Cnt;  // 通道大气光统计R值 | [0x0-0xffff]
+} DEHAZE_STAT_BLOCK;
+
 typedef struct _DEHAZE_STAT_S
 {
-    FH_UINT32 u32DehazeRGB[2048];  // Dehaze 32*64分区窗共2048个RGB三个通道大气光统计值：B(bit20~29)|G(bit10~19)|R(bit0~9) | [0~0x3fffffff]
-    FH_UINT16 u16DehazeIdx;        // 统计最小值中极大值所在窗Index | [0~0x7ff]
+    DEHAZE_STAT_BLOCK stDeHazeStat[2048];  // Dehaze 32*64分区窗共2048个RGB三个通道大气光统计R值 | [0~0xffff]
+    FH_UINT16 u16DehazeIdx;        // 统计最小值中极大值所在窗Index x | [0~0x3f]
+    FH_UINT16 u16DehazeIdy;        // 统计最小值中极大值所在窗Index y | [0~0x1f]
 } DEHAZE_STAT;
 
 /**|FAST_BOOT|**/
+/******************************************************************/
+/******************isp init cfg structure**************************/
+/******************************************************************/
+/******************************************************************/
+typedef struct _STRATEGY_INIT_CFG_S
+{
+    FH_BOOL   bFisrtRunFlag;     // 初始化第一次运行标志位，第一次运行置1, 非首次置0 | [0x0~0x1]
+    FH_UINT32 u32CurrTotalGain;  // 初始化当前曝光总增益U.6  | [0x40~0xffffffff]
+    FH_UINT16 u16CurrInttLine;   // 初始化当前曝光时间，单位为行  | [1~0xffff]
+    FH_UINT16 u16MaxInttLine;    // 初始化最大曝光时间，单位为行  | [1~0xffff]
+    FH_UINT16 u16SensorAgainMin; // 初始化Sensor Again最小值U.6  | [0x40~0xffff]
+    FH_UINT16 u16DgainMin;       // 初始化ISP Dgain最小值U.6  | [0x40~0xffff]
+} STRATEGY_INIT_CFG;
+
 typedef struct _BLC_INIT_CFG_S
 {
     FH_UINT16 blc_level; //黑电平值  | [0~0xffff]

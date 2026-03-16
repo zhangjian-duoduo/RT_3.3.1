@@ -13,7 +13,9 @@
 #ifndef __FH8852V310_BOARD_DEF_H__
 #define __FH8852V310_BOARD_DEF_H__
 
-#if defined(CONFIG_BOARD_APP)
+#if defined(CONFIG_BOARD_FAST)
+#include "fast_board/board_def.h"
+#elif defined(CONFIG_BOARD_APP)
 #include "app_board/board_def.h"
 #elif defined(CONFIG_BOARD_TEST)
 #include "test_board/board_def.h"

@@ -175,7 +175,7 @@ extern void rt_hw_pwm_init(void);
 #include "fh_hash.h"
 #endif
 
-#if defined(CONFIG_ARCH_FH865x) || defined(CONFIG_ARCH_FH8636_FH8852V20X)
+#if defined(CONFIG_ARCH_FH865x) || defined(CONFIG_ARCH_FH8636_FH8852V20X) || defined(CONFIG_ARCH_FH885xV310)
 #if !defined(CONFIG_CHIP_FH8626V200)
 #include "dsp/fh_nna_mpi.h"
 #endif
@@ -258,7 +258,7 @@ int import_flash_layout_info(void)
             break;
         fal_info[i].name = g_flash_layout_info[i].part_name;
         fal_info[i].offset = offset;
-        fal_info[i].size   = g_flash_layout_info[i].part_size;
+        fal_info[i].size = g_flash_layout_info[i].part_size;
 #ifdef FH_USING_NAND_FLASH
         fal_info[i].erase_block_size = FH_FAL_PART_BLK_SIZE_128K;
 #else
@@ -290,7 +290,7 @@ int import_flash_layout_info(void)
         }
         offset += fal_info[i].size;
     }
-    fh_fal_sfud_platform_data.parts    = fal_info;
+    fh_fal_sfud_platform_data.parts = fal_info;
     fh_fal_sfud_platform_data.nr_parts = i;
 
     if (__main_part_idx < 0)
@@ -352,12 +352,10 @@ extern void load_nn_modules(void);
 extern void load_application(void);
 void user_code_load(void)
 {
-#if (defined(CONFIG_ARCH_FH865x) || defined(CONFIG_ARCH_FH8636_FH8852V20X)) && defined(FH_FAST_BOOT)
+#if defined(FH_FAST_BOOT) && defined(NN_ENABLE)
     load_nn_modules();
 #endif
-
     load_application();
-
     /* wait fbv_init thread exits   */
     while (1)
     {
@@ -394,13 +392,31 @@ void _gmac_init(void)
 }
 #endif
 
+#if  defined (CONFIG_ARCH_FH885xV310)
+
+void nna_init(void)
+{
+    struct clk *nn_clk;
+
+    nn_clk = clk_get(NULL, "nn_clk");
+
+    if (nn_clk != RT_NULL)
+    {
+        if (clk_set_rate(nn_clk, 300000000))
+            rt_kprintf("clk_set_rate: nn_clk err\n");
+    }
+    else
+        rt_kprintf("cannot find clk: nn_clk\n");
+}
+#endif
+
 static void third_driver_init(void)
 {
-/* #ifdef FH_FAST_BOOT  */  /* fix gmac costs 100% CPU BUG */
+/* #ifdef FH_FAST_BOOT  */ /* fix gmac costs 100% CPU BUG */
 #if defined(FH_USING_GMAC)
     _gmac_init();
 #endif
-/* #endif   */
+    /* #endif   */
 }
 
 #if defined(RT_USING_LWIP)
@@ -437,14 +453,14 @@ static void sdcard_mount(void *parameter)
     if (mmcsd_wait_cd_changed(RT_TICK_PER_SECOND) == MMCSD_HOST_PLUGED)
     {
 #if defined(RT_USING_DFS_JFFS2) || defined(RT_USING_DFS_YAFFS2)
-        mkdir("/mnt",0);
+        mkdir("/mnt", 0);
         if (dfs_mount("mmcblk0p1", "/mnt", "elm", 0, 0) != 0)
 #else
         if (dfs_mount("mmcblk0p1", "/", "elm", 0, 0) != 0)
 #endif
             rt_kprintf("fat File System initialization failed!\n");
         else
-			rt_kprintf("fat File System initialization OK!\n");
+            rt_kprintf("fat File System initialization OK!\n");
     }
 }
 #endif
@@ -464,7 +480,7 @@ static void _uffs_fsinit(void)
     /* init the uffs filesystem */
     dfs_uffs_init();
 
-    mkdir("/nand0",0);
+    mkdir("/nand0", 0);
     /* mount flash device as flash directory */
     if (dfs_mount("nand0", "/nand0", "uffs", 0, 0) != 0)
         rt_kprintf("UFFS File System initialzation failed!\n");
@@ -503,8 +519,8 @@ static void yaffs2_fsinit(void)
         rt_sprintf(mtdname, "mtd%d", idx);
         if (dfs_mount(mtdname, "/", "yaffs2", 0, 0) != 0)
             rt_kprintf("yaffs2 System initialzation failed!:%s\n", mtdname);
-		else
-			rt_kprintf("yaffs2 System initialzation ok!:%s\n", mtdname);
+        else
+            rt_kprintf("yaffs2 System initialzation ok!:%s\n", mtdname);
     }
 }
 #endif
@@ -521,7 +537,7 @@ static void _ram_fsinit(void)
     if (ramfs_pool)
     {
         ramfs = (struct dfs_ramfs *)dfs_ramfs_create(
-                (rt_uint8_t *)ramfs_pool, 0x800000);
+            (rt_uint8_t *)ramfs_pool, 0x800000);
         if (ramfs != RT_NULL)
         {
             if (dfs_mount(RT_NULL, "/", "ram", 0, ramfs) != 0)
@@ -544,14 +560,13 @@ static void _nfs_fsinit(void)
 
     nfs_init();
 
-    mkdir("/nfs",0);
+    mkdir("/nfs", 0);
     if (dfs_mount(RT_NULL, "/nfs", "nfs", 0, RT_NFS_HOST_EXPORT) == 0)
     {
         rt_kprintf("NFSv3 File System initialized!\n");
     }
     else
         rt_kprintf("NFSv3 File System initialzation failed!\n");
-
 }
 #endif
 
@@ -564,11 +579,11 @@ static void ubifs_fsinit(void)
     if (ret == 0)
     {
         rt_kprintf("File System on mtd8  mounted!\n");
-        mkdir("/app",777);
+        mkdir("/app", 777);
     }
     else
     {
-        rt_kprintf("File System on mtd8  mount fail. %d\n",ret);
+        rt_kprintf("File System on mtd8  mount fail. %d\n", ret);
     }
 }
 #endif
@@ -615,7 +630,7 @@ void filesystem_init(void)
     _nfs_fsinit();
 #endif
 
-#endif  /* END RT_USING_DFS */
+#endif /* END RT_USING_DFS */
 }
 
 void _timekeeping_init(void)
@@ -702,12 +717,12 @@ static void sys_driver_init(void *param);
 static void fbv_init_thrd(void *args)
 {
 #ifdef FH_FAST_BOOT
+    nna_init();
     g_fastvideo_init_ok = __fastvideo_init();
 #endif
 
     _timekeeping_init();
     clock_time_system_init();
-
     sys_driver_init(RT_NULL);
 }
 
@@ -715,7 +730,7 @@ void first_code_run(void)
 {
     rt_thread_t tid;
 
-    peripheral_reset();       /* reset, pull down */
+    peripheral_reset(); /* reset, pull down */
 
     tid = rt_thread_create("fbv_init", fbv_init_thrd, RT_NULL, 4096, 90, 10);
     if (tid != RT_NULL)
@@ -790,7 +805,7 @@ static void normal_driver_init(void)
 
 void fourth_driver_init(void)
 {
-#ifndef FH_FAST_BOOT    /* now only multi-load support ulog */
+#ifndef FH_FAST_BOOT /* now only multi-load support ulog */
 #if defined(RT_USING_ULOG) && defined(ULOG_BACKEND_USING_CONSOLE)
     ulog_sys_init(ULOG_BE_TYPE_CONSOLE);
 #endif
@@ -822,15 +837,15 @@ void fourth_driver_init(void)
 #endif
     /* init rtc and update system walltime */
 
-#ifndef FH_FAST_BOOT    /* now only multi-load support ulog */
+#ifndef FH_FAST_BOOT /* now only multi-load support ulog */
 #if defined(RT_USING_ULOG) && defined(ULOG_BACKEND_USING_FS)
-/* fs log system must init after filesystem_init*/
-/* otherwise it will lead to mutex assert */
+    /* fs log system must init after filesystem_init*/
+    /* otherwise it will lead to mutex assert */
     ulog_sys_init(ULOG_BE_TYPE_FS);
 #endif
 #endif
 
-#ifdef RT_USING_FINSH           /* can be delayed. */
+#ifdef RT_USING_FINSH /* can be delayed. */
     finsh_system_init();
 #if defined(RT_USING_DEVICE) && !defined(RT_USING_POSIX)
     finsh_set_device(RT_CONSOLE_DEVICE_NAME);
@@ -870,23 +885,22 @@ void fourth_driver_init(void)
 }
 
 #ifdef CONFIG_STARTUP_TIMECOST
-#define MAX_TIME_LOG        (8)
-static unsigned int g_time_cost[MAX_TIME_LOG] = { 0 };
-extern void print_os_startup_time(void);        /* in os_startup.c */
-extern void print_fastboot_timecost(void);      /* in fbv_init.c/fbv_startup.c */
-extern void print_loadcode_timecost(void);      /* in flash_load.c/cp_load.c */
+#define MAX_TIME_LOG (8)
+static unsigned int g_time_cost[MAX_TIME_LOG] = {0};
+extern void print_os_startup_time(void);   /* in os_startup.c */
+extern void print_fastboot_timecost(void); /* in fbv_init.c/fbv_startup.c */
+extern void print_loadcode_timecost(void); /* in flash_load.c/cp_load.c */
 extern unsigned int get_os_startup_time(void);
-static void print_sys_init_time(void)           /* this file */
+static void print_sys_init_time(void) /* this file */
 {
     rt_kprintf("\n");
     rt_kprintf("      system init timecost:\n");
     rt_kprintf("              startup time: % 10u\n", g_time_cost[0]);
     rt_kprintf("        pre-init code cost: % 10d\n", g_time_cost[1] - g_time_cost[0]);
     rt_kprintf("        load drv code cost: % 10d\n", g_time_cost[2] - g_time_cost[1]);
-    rt_kprintf("         run drv code cost: % 10d\n", g_time_cost[3] - g_time_cost[2]);
-    rt_kprintf("        load usr code cost: % 10d\n", g_time_cost[4] - g_time_cost[3]);
-    rt_kprintf("         run usr code cost: % 10d\n", g_time_cost[5] - g_time_cost[4]);
-    rt_kprintf("       sys init total cost: % 10d\n", g_time_cost[6] - g_time_cost[0]);
+    rt_kprintf("        load usr code cost: % 10d\n", g_time_cost[3] - g_time_cost[2]);
+    rt_kprintf("        load rest_drv code cost: % 10d\n", g_time_cost[4] - g_time_cost[3]);
+    rt_kprintf("       sys init total cost: % 10d\n", g_time_cost[5] - g_time_cost[0]);
 }
 void output_startup_timecost(void)
 {
@@ -935,6 +949,11 @@ extern void fh_media_process_module_init(void);
 extern void fh_jpeg_module_init(void);
 extern void fh_isp_module_init(void);
 extern int fh_bgm_module_init(void);
+
+#ifdef CONFIG_ARCH_FH885xV310
+extern int fh_vise_module_init(void);
+#endif
+
 #if defined(FH_ENABLE_VIDEO) && !defined(FH_FAST_BOOT)
 static void video_init(void)
 {
@@ -953,10 +972,14 @@ static void video_init(void)
     fh_vpu_module_init();
 #endif
 
+#ifdef CONFIG_ARCH_FH885xV310
+    fh_vise_module_init();
+#endif
+
     fh_bgm_module_init();
     fh_jpeg_module_init();
 
-#define FH_SENSOR_CLK       (24 * 1000 * 1000)
+#define FH_SENSOR_CLK (24 * 1000 * 1000)
 #if defined(CONFIG_CHIP_YG)
     clk = (struct clk *)clk_get(NULL, "cis0_clk_out");
     if (!clk)
@@ -1023,7 +1046,6 @@ static void sys_driver_init(void *param)
     third_driver_init();
 
     normal_driver_init();
-
 }
 
 void rt_init_drv_thread_entry(void *parameter)
@@ -1031,45 +1053,39 @@ void rt_init_drv_thread_entry(void *parameter)
 #ifdef CONFIG_STARTUP_TIMECOST
     g_time_cost[0] = read_pts();
 #endif
+
     first_driver_init();
-    first_code_run();       /* nothing to do here */
+    first_code_run(); /* nothing to do here */
 
 #ifdef CONFIG_STARTUP_TIMECOST
     g_time_cost[1] = read_pts();
 #endif
-    second_driver_init();   /* init spi and start load */
+    second_driver_init(); /* init spi and start load */
 
 #ifdef CONFIG_STARTUP_TIMECOST
     g_time_cost[2] = read_pts();
 #endif
+    user_code_load(); /* just wait load done */
 
 #ifdef CONFIG_STARTUP_TIMECOST
     g_time_cost[3] = read_pts();
 #endif
-    user_code_load();       /* just wait load done */
+    fourth_driver_init();
 
 #ifdef CONFIG_STARTUP_TIMECOST
     g_time_cost[4] = read_pts();
 #endif
-    fourth_driver_init();
+    wait_init_done(); /* wait all init work done */
 
 #ifdef CONFIG_STARTUP_TIMECOST
     g_time_cost[5] = read_pts();
-#endif
-    wait_init_done();       /* wait all init work done */
-
-#ifdef CONFIG_STARTUP_TIMECOST
-    g_time_cost[6] = read_pts();
 
     report_startup_cost();
 #endif
 #if defined(FH_ENABLE_VIDEO) && !defined(FH_FAST_BOOT)
     video_init();
 #endif
-#if (defined(CONFIG_ARCH_FH865x) || defined(CONFIG_ARCH_FH8636_FH8852V20X)) && defined(FH_FAST_BOOT)
-extern int fb_get_nn_result(void);
-    rt_kprintf("FAST dect get: %d(@%d)\n", fb_get_nn_result(), (int)read_pts());
-#endif
+
 #ifdef RUN_SMP_TEST_THREAD
     extern void test_smp_thread(int cid);
     {
@@ -1081,7 +1097,7 @@ extern int fb_get_nn_result(void);
         }
     }
 #endif
-    user_main();            /* start user application */
+    user_main(); /* start user application */
 
     while (1)
     {
@@ -1093,11 +1109,11 @@ void rt_application_init(void)
 {
     rt_thread_t init_drv_thread;
 
-/*
- * USER_INIT_THREAD_STACK_SIZE configed in rtconfig.h
- */
+    /*
+     * USER_INIT_THREAD_STACK_SIZE configed in rtconfig.h
+     */
     init_drv_thread = rt_thread_create("init_drv", rt_init_drv_thread_entry,
-            RT_NULL, USER_INIT_THREAD_STACK_SIZE, 80, 5);
+                                       RT_NULL, USER_INIT_THREAD_STACK_SIZE, 80, 5);
 
 #ifdef RT_ENABLE_RUNNING_LOG
     runlog_init(0x10000);

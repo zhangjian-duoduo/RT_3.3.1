@@ -220,6 +220,11 @@ FH_SINT32 FHAdv_MD_CD_Check(FH_SINT32 grpidx);
  */
 FH_SINT32 FHAdv_MD_Set_Check_Mode(FH_SINT32 grpidx, FHT_MD_CheckMode_e check_mode);
 
+/*
+ * 设置MD/CD稳定时间，一般不需要调用这个函数，如果要尽快的获得MD/CD结果，可以调用这个函数
+ * stable_time： 单位为微秒, 0表示使用缺省值，缺省值为2000000即2秒
+ */
+FH_SINT32 FHAdv_MD_SetStableTime(FH_SINT32 grpidx, FH_UINT32 stable_time);
 
 /**
  *  @brief      遮挡侦测初始化

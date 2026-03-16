@@ -29,6 +29,7 @@
         *liblinux.a:(.text .text.*)
         *libadvapi.a:(.text .text.*)
         *libadvapi_osd.a:(.text .text.*)
+        *libvb_mpi_arm_rtt.a:(.text .text.*)
         *libxbus_rpc_arm_rtt.a:(.text .text.*)
         /* text patch for fastboot */
         *(.gnu.linkonce.t*)
@@ -63,6 +64,7 @@
         *liblinux.a:(.rodata .rodata.*)
         *libadvapi.a:(.rodata .rodata.*)
         *libadvapi_osd.a:(.rodata .rodata.*)
+        *libvb_mpi_arm_rtt.a:(.rodata .rodata.*)
         *libxbus_rpc_arm_rtt.a:(.rodata .rodata.*)
         /* rodata patch for fastboot */
         . = ALIGN(4);
@@ -101,6 +103,7 @@
         *liblinux.a:(.data .data.*)
         *libadvapi.a:(.data .data.*)
         *libadvapi_osd.a:(.data .data.*)
+        *libvb_mpi_arm_rtt.a:(.data .data.*)
         *libxbus_rpc_arm_rtt.a:(.data .data.*)
         /* rwdata patch for fastboot */
         /* this section can be removed if libadvapi.a is compiled without -fPIC */

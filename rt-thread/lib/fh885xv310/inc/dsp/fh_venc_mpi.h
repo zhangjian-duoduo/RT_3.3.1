@@ -362,6 +362,8 @@ FH_SINT32 FH_VENC_GetStream_Timeout(FH_UINT32 request_type,FH_VENC_STREAM *pstVe
 *          - 此接口仅可获取使用独立通道缓存的编码通道的码流数据，共用缓冲池应使用FH_VENC_GetStream_Timeout。
 *          - H264&H265在共用缓冲池模式时会公用一个缓冲池,因此FH_STREAM_H264和FH_STREAM_H265等价于(FH_STREAM_H264|FH_STREAM_H265)。
 *          - MJPEG/JPEG在编码码流超过分配的缓冲区大小时会返回大小为0的码流,此时依然需要调用FH_VENC_ReleaseStream释放码流。
+*          - 后续新版本对上一条出现缓冲区溢出的情况,不再返回大小为0的码流,而是返回错误号(0xa1024100)(注意此错误号时返回的码流结构体的码流类型和通道号依然有效,并应该不休眠继续取流)
+*          - 请应用基于缓冲区异常信息进行JPEG重编码的注意上述变更的适配,过渡期间最好兼容这两种情况.
 *          - 支持多个线程查询不同通道码流，但多个线程不能获取同一通道码流。
 */
 FH_SINT32 FH_VENC_GetChnStream_Timeout(FH_UINT32 chan,FH_VENC_STREAM *pstVencstreamAttr,FH_UINT32 timeout_ms);
@@ -521,6 +523,25 @@ FH_SINT32 FH_VENC_ClearRoi(FH_UINT32 chan);
 *          - 强制I帧的码率会计入码控统计,连续强制I帧会导致图像变差。
 */
 FH_SINT32 FH_VENC_RequestIDR(FH_UINT32 chan);
+
+/*
+*   Name: FH_VENC_RequestFreshPFrame
+*            申请强制刷新P帧
+*
+*   Parameters:
+*
+*       [in] FH_UINT32 chan
+*            通道号
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*   Note:
+*          - JPEG、MJPEG通道不支持此接口。
+*          - ENC通道非智能编码模式不支持此接口。
+*          - 强制刷新P帧的码率会计入码控统计,连续强制刷新P帧会导致图像变差。
+*/
+FH_SINT32 FH_VENC_RequestFreshPFrame(FH_UINT32 chan);
 
 /*
 *   Name: FH_VENC_GetCurPts
@@ -1409,6 +1430,30 @@ FH_SINT32 FH_VENC_SetChnParam(FH_UINT32 chan,const FH_VENC_CHN_PARAM *pstchnpara
 *          非0(失败，详见错误码)
 */
 FH_SINT32 FH_VENC_GetChnParam(FH_UINT32 chan,FH_VENC_CHN_PARAM *pstchnparam);
+
+/*
+*   Name: FH_VENC_GetMoveStatistic
+*            获取运动块占比统计信息
+*
+*   Parameters:
+*
+*       [in] FH_UINT32 chan
+*            通道号
+*
+*       [out] FH_MOVE_INFO *moveinfo
+*            运动统计信息
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*   Note:
+*          - 由于运动统计信息来自前一级模块，如果出现以下4种情况中的任意一个，获取的运动信息是无效的：
+*          - 1. 绑定源非vpu通道
+*          - 2. offline模式下没有通过FH_VENC_SetEncParam-ENCPARAM_CMD_FRM_SOURCE配置数据来源
+*          - 3. 绑定源为vpu通道，运动统计参数use_md配置为1，且关闭isp-md统计同时关闭vpu-sad统计
+*          - 4. 绑定源为vpu通道，运动统计参数use_md配置为0，且关闭vpu-sad统计
+*/
+FH_SINT32 FH_VENC_GetMoveStatistic(FH_UINT32 chan,FH_MOVE_INFO *moveinfo);
 
 
 #ifdef __cplusplus

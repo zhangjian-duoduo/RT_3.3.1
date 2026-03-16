@@ -235,7 +235,7 @@ enum COMMON_IF_CMD{
     COMMON_IF_CMD_DUMMY =0xffffffff,
 };
 
-struct isp_sensor_if* Sensor_Create(void);
+struct isp_sensor_if* Sensor_Create(char* name);
 FH_VOID Sensor_Destroy(struct isp_sensor_if *s_if);
 
 #pragma pack()

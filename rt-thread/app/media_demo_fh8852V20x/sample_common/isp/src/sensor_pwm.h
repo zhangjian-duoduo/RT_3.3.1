@@ -22,6 +22,7 @@ typedef struct
 
 typedef unsigned int __u32;
 
+#ifdef __LINUX_OS__
 #define DEVICE_NAME "/dev/fh_pwm"
 #define FH_PWM_PROC_FILE "driver/pwm"
 
@@ -50,8 +51,8 @@ struct fh_pwm_config
 #define FH_PWM_STOPLVL_HIGH (0x3)
 #define FH_PWM_STOPLVL_KEEP (0x1)
 
-#define FH_PWM_STOPCTRL_ATONCE (0x00)
-#define FH_PWM_STOPCTRL_AFTERFINISH (0x10)
+#define FH_PWM_STOPCTRL_ATONCE (0x10)
+#define FH_PWM_STOPCTRL_AFTERFINISH (0x0)
     unsigned int stop;
     unsigned int delay_ns;
     unsigned int phase_ns;
@@ -87,13 +88,74 @@ typedef struct fh_pwm_conf
     unsigned int phase_ns;
     unsigned int pulses;
 }FH_PWM_CONF;
+#endif 
+
+#ifdef __RTTHREAD_OS__
+#ifndef NSEC_PER_SEC
+#define NSEC_PER_SEC (1000000000ULL)
+#endif
+#define DEVICE_NAME "/dev/pwm"
+#define ENABLE_PWM                      0
+#define DISABLE_PWM                     1
+#define SET_PWM_CONFIG                  2
+#define GET_PWM_CONFIG                  3
+#define SET_PWM_DUTY_CYCLE_PERCENT      4
+#define SET_PWM_ENABLE                  5
+#define SET_PWM_STOP_CTRL               6
+#define ENABLE_MUL_PWM                  7
+#define ENABLE_FINSHALL_INTR            8
+#define ENABLE_FINSHONCE_INTR           9
+#define DISABLE_FINSHALL_INTR           10
+#define DISABLE_FINSHONCE_INTR          11
+
+struct fh_pwm_config
+{
+    unsigned int period_ns;
+    unsigned int duty_ns;
+#define  FH_PWM_PULSE_LIMIT         (0x0)
+#define  FH_PWM_PULSE_NOLIMIT       (0x1)
+    unsigned int pulses;
+    unsigned int pulse_num;
+#define FH_PWM_STOPLVL_LOW          (0x0)
+#define FH_PWM_STOPLVL_HIGH         (0x3)
+#define FH_PWM_STOPLVL_KEEP         (0x1)
+    unsigned int stop;
+#define FH_PWM_STOPCTRL_ATONCE (0x10)
+#define FH_PWM_STOPCTRL_AFTERFINISH (0x0)
+    unsigned int stop_ctrl;
+    unsigned int delay_ns;
+    unsigned int phase_ns;
+    unsigned int percent;
+    unsigned int shadow_enable;
+    unsigned int finish_once;
+    unsigned int finish_all;
+};
+
+struct fh_pwm_status
+{
+    unsigned int done_cnt;
+    unsigned int total_cnt;
+    unsigned int busy;
+    unsigned int error;
+};
+
+struct fh_pwm_chip_data
+{
+    int id;
+    struct fh_pwm_config config;
+    struct fh_pwm_status status;
+    void (*finishall_callback)(struct fh_pwm_chip_data *data);
+    void (*finishonce_callback)(struct fh_pwm_chip_data *data);
+};
+#endif
 
 void FH_PWM_Init(int pwmId);
-void FH_PWM_setConfig(FH_PWM_CONF *pwm_conf);
+void FH_PWM_setConfig(struct fh_pwm_chip_data *pwm_conf);
 void FH_PWM_Start(void);
 void FH_PWM_Stop(void);
 void FH_PWM_RateChange(char *rate);
 void FH_TimerInit(unsigned int microseconds);
 void FH_SensorSequeCreate_Handler(int signum);
+void myUsleep(long int us);
 
 #endif /* __SENSOR_PWM_H__ */

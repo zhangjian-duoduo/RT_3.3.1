@@ -260,8 +260,36 @@ FH_SINT32 FH_NNA_DET_POINT_Forward(FH_VOID *detHandle, FH_DETECTION_INFO *out);
 *
 */
 
-
 FH_SINT32 FH_NNA_DET_CUSTOM_Process(FH_VOID *detHandle, FH_IMAGE_T *src,  FH_QTENSOR_ARRAY_T *out);
+
+/*
+*   Name: FH_NNA_DET_CUSTOM_POST_Process
+*            根据输入的文件句柄，完成网络的前向推理，得到网络检测到的Bbox信息等供应用使用该信息
+*
+*   Parameters:
+*
+*       [in] FH_VOID *detHandle
+*            上述函数创建的句柄.
+*
+*       [in] FH_QTENSOR_ARRAY_T *in
+*            网络推理输出的数据，不包括后处理数据信息.
+*
+*       [out] FH_DETECTION_T *out
+*            网络前向推理的结果，　包括的得到网络的输出检测框信息
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*   Note:
+*          前向推理内部会检测输入图像的幅面信息是否跟网络自身检测范围匹配．同时会检测输入的图像格式．
+* 　　　　 同时需要知道输入的buffer物理地址．
+*          FH_NNA_DET_POST_Process 此函数返回的是网络推理的结果，没有经过后处理，需要用户自定义后处理
+*          后出完成后，需要调用FH_NNA_DET_CUSTOM_Release 释放资源.
+*
+*
+*/
+
+FH_SINT32 FH_NNA_DET_CUSTOM_POST_Process(FH_VOID *detHandle,  FH_QTENSOR_ARRAY_T *in, FH_DETECTION_T *out);
 
 /*
 *   Name: FH_NNA_DET_CUSTOM_Forward
@@ -351,6 +379,28 @@ FH_SINT32 FH_NNA_DET_SetParam(FH_VOID *detHandle, FH_DET_SETPARAM_T *setParams);
 */
 
 FH_SINT32 FH_NNA_DET_SetParam_EXT(FH_VOID *detHandle, FH_DET_SETPARAM_EXT_T *setParams);
+
+/*
+*   Name: FH_NNA_DET_SetNmsThresh
+*            设置网络的清理检测阈值.
+*
+*   Parameters:
+*
+*       [in] FH_VOID *detHandle
+*            创建的网络句柄.
+*
+*       [in] FH_FLOAT *nms_thresh
+*            清理检测阈值
+*
+*   Return:
+*           0(成功)
+*          非0(失败，详见错误码)
+*   Note:
+*          该阈值用于判断多个检测结果是否是对同一目标的检测.从而决定是否将他们合并.
+*          nms_thresh越低,框个数越少.
+*
+*/
+FH_SINT32 FH_NNA_DET_SetNmsThresh(FH_VOID *detHandle, FH_FLOAT nms_thresh);
 
 /*
 *   Name: FH_NNA_DET_Exit

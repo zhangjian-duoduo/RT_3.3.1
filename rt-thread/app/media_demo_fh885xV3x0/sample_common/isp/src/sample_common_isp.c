@@ -388,6 +388,7 @@ static FH_SINT32 sample_isp_init(FH_UINT32 grpid)
     sensor_vi_attr.u16OffsetX = 0;
     sensor_vi_attr.u16OffsetY = 0;
     sensor_vi_attr.enBayerType = BAYER_GRBG;
+
     ret = API_ISP_SetViAttr(grpid, &sensor_vi_attr);
     if (ret)
     {
@@ -401,7 +402,39 @@ static FH_SINT32 sample_isp_init(FH_UINT32 grpid)
         printf("Error(%d - %x): API_ISP_SetSensorFmt (grpid):(%d)!\n", ret, ret, grpid);
         return ret;
     }
-#endif
+#if defined(FH_USING_GC2083_MIPI_G0) && defined(FH_USING_GC2083_MIPI_G1)
+    ret = API_ISP_GetViAttr(grpid, &sensor_vi_attr);
+    if (ret)
+    {
+        printf("Error(%d - %x): API_ISP_GetViAttr (grpid):(%d)!\n", ret, ret, grpid);
+        return ret;
+    }
+    if (grpid == 0)
+    {
+        if (g_isp_info[grpid].isp_format == FORMAT_1080P30)
+        {
+            // 修改sensor 输出幅面的高为1084
+            API_ISP_SetSensorReg(grpid, 0x0196, 0x3c);
+            // 修改isp 输入幅面大小为1084
+            sensor_vi_attr.u16InputHeight += 4;
+        }
+        if (g_isp_info[grpid].isp_format == FORMAT_720P30)
+        {
+            // 修改sensor 输出幅面的高为724
+            API_ISP_SetSensorReg(grpid, 0x0196, 0xd4);
+            // 修改isp 输入幅面大小为724
+            sensor_vi_attr.u16InputHeight += 4;
+        }
+    }
+    ret = API_ISP_SetViAttr(grpid, &sensor_vi_attr);
+    if (ret)
+    {
+        printf("Error(%d - %x): API_ISP_SetViAttr (grpid):(%d)!\n", ret, ret, grpid);
+        return ret;
+    }
+
+#endif /* defined(FH_USING_GC2083_MIPI_G0) && defined(FH_USING_GC2083_MIPI_G1) */
+#endif /* EMU */
 
     // 启动sensor输出
     ret = API_ISP_SensorKick(grpid);
@@ -509,15 +542,15 @@ FH_SINT32 sample_common_start_isp(FH_VOID)
         }
     }
 #ifdef MULTI_SENSOR
-    FH_PWM_CONF pwm_conf;
+    struct fh_pwm_chip_data pwm_conf;
     pwm_conf.id = 9;
-    pwm_conf.period_ns = 66000000;
-    pwm_conf.duty_ns = 33000000;
-    pwm_conf.delay_ns = 33000000 - 1.82 * 1000 * 1000 + 1.24 * 1000 * 1000;
-    pwm_conf.phase_ns = 0;
-    pwm_conf.pulses = 0;
+    pwm_conf.config.period_ns = 66000000;
+    pwm_conf.config.duty_ns = 33000000;
+    pwm_conf.config.delay_ns = 33000000;
+    pwm_conf.config.phase_ns = 0;
+    pwm_conf.config.pulses = 0;
 
-    FH_PWM_Init(9);              // 初始化pwm10
+    FH_PWM_Init(pwm_conf.id);             // 初始化pwm9
     FH_PWM_setConfig(&pwm_conf); // 设置pwm的参数
     FH_PWM_Start();              // 开启pwm
 
@@ -528,16 +561,24 @@ FH_SINT32 sample_common_start_isp(FH_VOID)
 #endif
 
 #ifdef __RTTHREAD_OS__
+    extern long rt_hw_interrupt_disable(void);
+    extern void rt_hw_interrupt_enable(int);
+    long flag = rt_hw_interrupt_disable();
+
     API_ISP_SetSensorReg(0, 0x03fe, 0x0000);
-    myUsleep(32840);
+
+    myUsleep(32640);
+
     API_ISP_SetSensorReg(1, 0x03fe, 0x0000); // reset sensor 2
 
     // 同时启动两个sensor
     API_ISP_SetSensorReg(0, 0x023e, 0x0099);
+
+
     API_ISP_SetSensorReg(1, 0x023e, 0x0099);
 
+    rt_hw_interrupt_enable(flag);
 #endif
-
 #endif /*MULTI_SENSOR*/
     return 0;
 }

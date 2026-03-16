@@ -66,7 +66,7 @@ typedef enum
 {
 	H264_PROFILE_BASELINE   = 66,// baseline profile | [ ]
 	H264_PROFILE_MAIN       = 77,// main profile | [ ]
-	H264_PROFILE_HIGH       = 100,// main profile | [ ]
+	H264_PROFILE_HIGH       = 100,// high profile | [ ]
 	FH_H264_PROFILE_DUMMY   = 0xffffffff,
 }FH_H264_PROFILE;
 
@@ -154,8 +154,10 @@ typedef struct
 	FH_UINT32              ref_mode_h26x;      // 普通编码支持的最大跳帧参考模式, 0:不支持抽帧 1:单层跳帧 2:双层跳帧 | [0-2]
 	FH_UINT32              ref_mode_s26x;      // 智能编码支持的最大跳帧参考模式, 0:不支持抽帧 1:单层跳帧 2:双层跳帧 | [0-2]
 	FH_UINT32              minfrmbufsize_h26x; // 视频编码单帧保留内存大小,0为默认配置,其他为用户自定义大小,需用户保证合理 | [ ]
+	FH_UINT32              minpfrmbufsize_h26x; // 视频编码单帧保留内存大小(非I帧),0为使用minfrmbufsize_h26x,其他为用户自定义大小,需用户保证合理,合理值应小于等于minfrmbufsize_h26x | [ ]
 	FH_UINT32              minfrmbufsize_jpeg; // JPEG编码单帧保留内存大小,0为默认配置,其他为用户自定义大小,需用户保证合理 | [ ]
 	FH_UINT32              minfrmbufsize_mjpeg;// MJPEG编码单帧保留内存大小,0为默认配置,其他为用户自定义大小,需用户保证合理 | [ ]
+	FH_UINT32              all_ifrm_chan;      // 标记此通道视频编码仅使用I帧，以减少参考帧的内存分配 | [0-1]
 }FH_VENC_CHN_PARAM;
 
 typedef struct
@@ -657,7 +659,9 @@ typedef struct
 	FH_UINT32               framecnt;           // 已编码帧数 | [ ]
 	FH_UINT32               streamcnt;          // 输出队列中的帧数 | [ ]
 	FH_UINT32               lostcnt;            // 通道的累计丢帧数 | [ ]
-	FH_UINT32               stat[5];            // 保留变量 | [ ]
+	FH_UINT32               prelostcnt;         // 通道的累计编码前丢帧数 | [ ]
+	FH_UINT32               postlostcnt;        // 通道的累计编码后丢帧数 | [ ]
+	FH_UINT32               stat[3];            // 保留变量 | [ ]
 }FH_CHN_STATUS;
 
 typedef struct
@@ -671,8 +675,9 @@ typedef struct
 
 typedef struct
 {
-	FH_SINT32               qp[7];              // 对应level-1使用的QP | [绝对QP:0-51，相对QP:-51-51]
-	FH_BOOL                 isdeltaqp[7];       // 对应level-1的设置，0:绝对QP,使用用户QP 1:相对QP,在RC QP基础上加减Delta值 | [0-1]
+	FH_UINT8                enable[8];          // enable[level] 对应level的使能，level=0不被使用 0:关闭 1:打开 | [0-1]
+	FH_SINT32               qp[8];              // qp[level] 对应level使用的QP，level=0不被使用 | [绝对QP:0-51，相对QP:-51-51]
+	FH_BOOL                 isdeltaqp[8];       // isdeltaqp[level] 对应level的设置，level=0不被使用 0:绝对QP,使用用户QP 1:相对QP,在RC QP基础上加减Delta值 | [0-1]
 	FH_UINT32               size;               // map 长度, w/64 * h/64 * 16, w/h为64对齐后的宽高 | [ ]
 	FH_PHYADDR              roi_addr;           // map 基地址 | [ ]
 }FH_ROI_MAP;
@@ -731,6 +736,9 @@ typedef enum
 	ENCPARAM_CMD_GOP                 = 13,// I帧间隔 | []
 	ENCPARAM_CMD_FRM_SOURCE          = 14,// 配置通道图像数据源，用于非绑定模式下指定数据来源以获取编码统计,适用于H264&H265 | []
 	ENCPARAM_CMD_ENC_STRATEGY        = 15,// 配置编码策略倾向，适用于H264&H265. | []
+	ENCPARAM_CMD_USR_STRATEGY        = 16,// 无开发人员特殊建议时应调用ENCPARAM_CMD_ENC_STRATEGY | []
+	ENCPARAM_CMD_SMT_GOP             = 17,// 智能帧间隔配置 | []
+	ENCPARAM_CMD_MOVE_STATISTIC      = 18,// 运动块占比统计配置 | []
 	FH_ENCPARAM_CMD_DUMMY            = 0xffffffff,
 }FH_ENCPARAM_CMD;
 
@@ -823,8 +831,16 @@ typedef struct
 
 typedef struct
 {
-	FH_UINT32 i_interval; // I帧间隔 | [ ]
+	FH_UINT32 i_interval;   // I帧间隔 | [ ]
+	FH_UINT8  refresh_mode; // 0:下一个GOP生效I帧间隔 1:执行强制I帧并立即生效I帧间隔 | []
 }ENCPARAM_GOP;
+
+typedef struct
+{
+	FH_UINT32 refresh_frame_intterval; // 刷新帧间隔 | [ ]
+	FH_UINT8  refresh_mode;            // 0:下一个GOP生效刷新帧间隔 1:执行强制I帧并立即生效刷新帧间隔 | [0-1]
+	FH_GOP_TH gop_th;                  // 设置静止帧门限，决定GOP长度 | [ ]
+}ENCPARAM_SMT_GOP;
 
 typedef struct
 {
@@ -842,6 +858,7 @@ typedef enum
 	FH_ENC_BALANCE_PRO_STRATEGY     = 1, // 个别策略弱于质量优先,但高于平衡策略 | [ ]
 	FH_ENC_BALANCE_STRATEGY         = 2, // 平衡编码策略 | [ ]
 	FH_ENC_BITRATE_STRATEGY         = 4, // 码率优先编码策略 | [ ]
+	FH_ENC_BITRATE_STRATEGY_EP1     = 5, // 码率优先编码策略, 在4基础上降低图像清晰度和码率 | [ ]
 	FH_ENC_STRATEGY_DUMMY           = 0xffffffff,
 }FH_VENC_STRATEGY_MODE;
 
@@ -849,6 +866,24 @@ typedef struct
 {
 	FH_VENC_STRATEGY_MODE strategy_mode; // 编码策略模式，此为编码器单帧编码底层策略倾向，以低码率等应用还可以结合一些如智能编码,丢帧策略等更宏观面策略 | [ ]
 }ENCPARAM_STRATEGY_CONFIG;
+
+/**
+ * 请直接使用ENCPARAM_CMD_ENC_STRATEGY调整编码策略风格,不要在无非开发人员建议值的情况下自行调用此接口.
+ */
+typedef struct
+{
+	FH_SINT32 ifrm_enhancement_enable[5];            // 细节增强策略配置 | [ ]
+	FH_SINT32 motion_recovery_enhancement_enable[4]; // 运动恢复策略配置 | [ ]
+	FH_SINT32 motion_recovery_param[2];              // 运动恢复参数 | [ ]
+	FH_SINT32 bias_strategy[4];                      // 倾向性策略参数 | [ ]
+	FH_SINT32 low_bitrate_strategy[2];               // 低码率策略参数 | [ ]
+}ENCPARAM_USR_STRATEGY;
+
+typedef struct
+{
+	FH_UINT16 win_size;      // 窗口大小 | [1-65535]
+	FH_BOOL   use_md;        // 是否优先使用isp的md数据作为统计依据 | [0-1]
+}ENCPARAM_MOVE_STATISTIC;
 
 typedef union
 {
@@ -867,8 +902,11 @@ typedef union
 	ENCPARAM_ADV_BKGQP              adv_bkgqp;         // 根据纹理基本调整背景QP | []
 	ENCPARAM_BIG_PFRM               bigpfrm;           // 指定在GOP中插入大P帧的配置 | []
 	ENCPARAM_GOP                    gop;               // I帧间隔 | []
+	ENCPARAM_SMT_GOP                smt_gop;           // 智能GOP间隔 | []
 	ENCPARAM_FRM_SRC                frm_src;           // 配置通道图像数据源，用于非绑定模式下指定数据来源以获取编码统计,适用于H264&H265 | []
 	ENCPARAM_STRATEGY_CONFIG        enc_strategy;      // 配置编码策略倾向,在销毁重创建通道或者切换编码类型(包括智能非智能之间的切换)后需要重新配置此模式. | []
+	ENCPARAM_USR_STRATEGY           usr_strategy;      // 配置编码策略参数,在销毁重创建通道或者切换编码类型(包括智能非智能之间的切换)后需要重新配置此模式. | []
+	ENCPARAM_MOVE_STATISTIC         move_stat;         // 配置运动块占比统计参数 | []
 }FH_ENC_PARAM_UNION;
 
 typedef struct
@@ -1005,6 +1043,13 @@ typedef struct
 	FH_ENC_BIAS_PARAM bg_bias; // 背景CU模式倾向性调节 | [ ]
 	FH_ENC_BIAS_PARAM frm_bias;// 帧级CU模式倾向性调节 | [ ]
 }FH_ENC_BIAS;
+
+typedef struct
+{
+	FH_UINT32 ratio;         // 上一帧运动块占比，运动块比率*10000 | [ ]
+	FH_UINT32 avg_ratio;     // 窗口内帧的平均运动块占比，运动块比率*10000 | [ ]
+	FH_BOOL   is_valid;      // 运动块占比数值是否有效 | [0-1]
+}FH_MOVE_INFO;
 
 #pragma pack()
 

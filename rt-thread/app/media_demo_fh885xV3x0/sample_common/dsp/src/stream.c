@@ -15,6 +15,30 @@ struct stream_info {
     enum stream_type type;
 };
 
+FH_SINT32 fbv_dmc_init(FH_CHAR *dst_ip, FH_UINT32 port, FH_SINT32 max_channel_no)
+{
+    dmc_init();
+
+#ifdef FH_APP_USING_PES
+    if (dst_ip != NULL && *dst_ip != 0)
+    {
+        dmc_pes_subscribe(max_channel_no, dst_ip, port);
+    }
+#endif
+
+#ifdef FH_APP_USING_RTSP
+    dmc_rtsp_subscribe(max_channel_no, port);
+#endif
+
+#ifdef FH_APP_USING_RAW_STREAM
+    dmc_record_subscribe(max_channel_no);
+#endif
+
+    dmc_http_mjpeg_subscribe(HTTP_MJPEG_PORT);
+
+    return 0;
+}
+
 static struct stream_info g_stream_info[MAX_GRP_NUM];
 
 static FH_VOID _get_stream_info_type()

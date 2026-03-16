@@ -71,6 +71,109 @@ static void free_nn_models(FH_UINT8 *buf)
     free(buf);
 }
 
+// draw function
+#if defined(FH_APP_OPEN_PVF_DETECT) || defined(FH_APP_OPEN_LPD_DETECT)
+typedef struct
+{
+    FH_SINT32 box_x;
+    FH_SINT32 box_y;
+    FH_SINT32 box_w;
+    FH_SINT32 box_h;
+
+} FH_BOX;
+
+static FH_SINT32 check_parmas(FH_BOX *rect, int chn_width, int chn_height)
+{
+    FH_SINT32 ret = 0;
+
+    if (rect->box_x < 0 || rect->box_y < 0 || rect->box_w < 0 || rect->box_h < 0)
+    {
+        ret = -1;
+    }
+
+    if ((rect->box_x + rect->box_w) > chn_width) // fix over size
+    {
+        rect->box_w = chn_width - rect->box_x - 1;
+    }
+    if ((rect->box_y + rect->box_h) > chn_height)
+    {
+        rect->box_h = chn_height - rect->box_y - 1;
+    }
+
+    return ret;
+}
+#endif
+
+#ifdef FH_APP_OPEN_LPD_DETECT
+static FH_VOID draw_lpdBox(FH_DETECTION_INFO *out, FH_UINT32 box_chnw, FH_UINT32 box_chnh)
+{
+    FH_BOX box;
+    static FH_DETECTION_INFO out_last = {0};
+    FHT_RgbColor_t box_color = {255, 0, 0, 255};
+
+    for (int i = 0; i < out_last.lpd_detect_t.boxNum; i++)
+    {
+        sample_set_gbox(0, 0, i, 0, 0, 0, 0, box_color);
+    }
+
+    for (int i = 0; i < out->lpd_detect_t.boxNum; i++)
+    {
+        box.box_x = out->lpd_detect_t.detBBox[i].bbox.x * box_chnw;
+        box.box_y = out->lpd_detect_t.detBBox[i].bbox.y * box_chnh;
+        box.box_w = out->lpd_detect_t.detBBox[i].bbox.w * box_chnw;
+        box.box_h = out->lpd_detect_t.detBBox[i].bbox.h * box_chnh;
+
+        if (!check_parmas(&box, box_chnw, box_chnh))
+        {
+            sample_set_gbox(DRAW_BOX_CHAN, 1, i , box.box_x, box.box_y, box.box_w, box.box_h, box_color);
+        }
+    }
+    out_last.lpd_detect_t.boxNum = out->lpd_detect_t.boxNum;
+}
+#elif defined(FH_APP_OPEN_PVF_DETECT) 
+static FH_VOID draw_pcfBox(FH_DETECTION_T *out, FH_UINT32 box_chnw, FH_UINT32 box_chnh)
+{
+    FH_BOX box;
+    FH_SINT32 step = 0;
+    FHT_RgbColor_t box_color = {0, 0, 0, 0};
+    FHT_RgbColor_t box_color_p = {255, 0, 0, 255};
+    FHT_RgbColor_t box_color_c = {0, 255, 0, 255};
+    FHT_RgbColor_t box_color_f = {0, 0, 255, 255};
+
+    for (int i = 0; i < 255; i++)
+    {
+        sample_set_gbox(0, 0, i, 0, 0, 0, 0, box_color_p);
+    }
+
+    for (int i = 0; i < out->boxNum; i++)
+    {
+        box.box_x = out->detBBox[i].bbox.x * box_chnw;
+        box.box_y = out->detBBox[i].bbox.y * box_chnh;
+        box.box_w = out->detBBox[i].bbox.w * box_chnw;
+        box.box_h = out->detBBox[i].bbox.h * box_chnh;
+        if (out->detBBox[i].clsType == 0)
+        {
+            box_color = box_color_p;
+            step = 0;
+        }
+        else if (out->detBBox[i].clsType == 1)
+        {
+            box_color = box_color_c;
+            step = 100;
+        }
+        else if (out->detBBox[i].clsType == 2)
+        {
+            box_color = box_color_f;
+            step = 200;
+        }
+
+        if (!check_parmas(&box, box_chnw, box_chnh))
+        {
+            sample_set_gbox(DRAW_BOX_CHAN, 1, i + step, box.box_x, box.box_y, box.box_w, box.box_h, box_color);
+        }
+    }
+}
+#else
 static FH_UINT32 compare_rect(FH_RECT_T rect1, FH_RECT_T rect2)
 {
     FH_UINT32 dt_x = 0;
@@ -181,6 +284,7 @@ static FH_VOID draw_box(FH_DETECTION_T *out, FH_UINT32 box_chnw, FH_UINT32 box_c
 
     out_last.boxNum = out->boxNum;
 }
+#endif //draw faction
 
 static FH_SINT32 sample_nna_deinit(FH_VOID *detHandle)
 {
@@ -217,7 +321,13 @@ static FH_VOID *sample_init_fh_nn(FH_VOID)
 #elif defined(FH_APP_OPEN_NN_DETECT)
     nna_param.type     = FN_DET_TYPE_PERSON;
     strcpy(modelPath, "./pedestrian/persondet.nbg");
-#else 
+#elif defined(FH_APP_OPEN_PVF_DETECT)
+    nna_param.type = FN_DET_C3DET;
+    strcpy(modelPath, "./pedestrian_vehicle_fire/c3det.nbg");
+#elif defined(FH_APP_OPEN_LPD_DETECT)
+    nna_param.type = FN_DET_NET_LPDET;
+    strcpy(modelPath, "./LPR/lpdet.nbg");
+#else
     printf("Invalid detect type %d\n", nna_param.type);
     return NULL;
 #endif
@@ -237,6 +347,17 @@ static FH_VOID *sample_init_fh_nn(FH_VOID)
         printf("FH_NNA_DET_Init failed with %x\n", ret);
         detHandle = NULL;
     }
+
+#ifdef FH_APP_OPEN_PVF_DETECT
+    FH_DET_SETPARAM_EXT_T setParams;
+    setParams.cls_id = 1;
+    setParams.conf_thr = 0.4;
+    ret = FH_NNA_DET_SetParam_EXT(detHandle, &setParams);
+    if (ret)
+    {
+        printf("FH_NNA_DET_SetParam_EXT failed with %x\n", ret);
+    }
+#endif
 
     free_nn_models(nna_param.nbg_data);
 
@@ -271,8 +392,11 @@ FH_VOID *thread_nn_detect(FH_VOID *args)
 {
     FH_SINT32 ret;
     FH_VOID *detHandle = NULL;
+#ifdef FH_APP_OPEN_LPD_DETECT
+    FH_DETECTION_INFO nn_out;
+#else
     FH_DETECTION_T nn_out;
-
+#endif
     detHandle = sample_init_fh_nn();
     if (detHandle == NULL)
     {
@@ -302,14 +426,29 @@ FH_VOID *thread_nn_detect(FH_VOID *args)
 
     while (!g_stop_nna_detect)
     {
+#ifdef FH_APP_OPEN_LPD_DETECT
+        ret = FH_NNA_DET_POINT_Forward(detHandle, &nn_out);
+        if (ret)
+        {
+            printf("Error[FH_NN]: FH_NNA_DET_Process failed, ret = %x\n", ret);
+            continue;
+        }
+#else
         ret = FH_NNA_DET_Forward(detHandle, &nn_out);
         if (ret)
         {
             printf("Error[FH_NN]: FH_NNA_DET_Process failed, ret = %x\n", ret);
             continue;
         }
+#endif
 
+#if defined(FH_APP_OPEN_PVF_DETECT)
+        draw_pcfBox(&nn_out, box_chn_w, box_chn_h);
+#elif defined(FH_APP_OPEN_LPD_DETECT)
+        draw_lpdBox(&nn_out, box_chn_w, box_chn_h);
+#else
         draw_box(&nn_out, box_chn_w, box_chn_h);
+#endif
     }
 
 Exit:
@@ -334,7 +473,9 @@ FH_SINT32 sample_fh_nn_obj_detect_start(FH_VOID)
     pthread_attr_init(&nn_attr);
 
     pthread_attr_setdetachstate(&nn_attr, PTHREAD_CREATE_DETACHED);
-    pthread_attr_setstacksize(&nn_attr, 10 * 1024);
+#ifdef __RTTHREAD_OS__
+    pthread_attr_setstacksize(&nn_attr, 256 * 1024);
+#endif
     if (pthread_create(&nn_thread, &nn_attr, thread_nn_detect, NULL))
     {
         printf("Error[FH_NN]: pthread_create failed\n");

@@ -46,6 +46,7 @@ typedef enum fyEN_ERR_CODE_E
     EN_ERR_SYS_NOTREADY  = 16,/* System not ready,maybe not init load         */
     EN_ERR_BADADDR       = 17,/* bad address                                  */
     EN_ERR_BUSY          = 18,/* resource is busy                             */
+    EN_ERR_RPC_COMM      = 19,/* rpc communication error                      */
     EN_ERR_BUTT          = 63,/* maxium code, private code must be larger     */
 }EN_ERR_CODE_E;
 

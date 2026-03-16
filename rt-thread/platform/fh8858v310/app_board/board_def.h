@@ -25,7 +25,7 @@
 
 #ifndef FH_DDR_START
 #define FH_DDR_START        0xA0000000
-#define FH_DDR_END          0xE0000000
+#define FH_DDR_END          0xB0000000
 #define FH_DDR_SIZE         (FH_DDR_END - FH_DDR_START)
 
 #define FH_RTT_OS_MEM_SIZE  0x01800000
