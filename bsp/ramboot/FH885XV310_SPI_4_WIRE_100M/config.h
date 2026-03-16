@@ -1,7 +1,7 @@
 /*
  * Automatically generated C config: don't edit
  * Ramboot Build Configuration
- * Thu Aug  3 15:38:59 2023
+ * Sun Feb  4 14:35:43 2024
  */
 
 #ifndef _FH_AUTO_CONFIG_
