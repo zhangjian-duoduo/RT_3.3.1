@@ -1,0 +1,40 @@
+choice
+		prompt "choice sensor"
+		default FH_USING_GC2083_MIPI
+			
+		config FH_USING_GC2083_MIPI
+			bool "gc2083 mipi"
+
+		config FH_USING_OVOS02K_MIPI
+			bool "ovos02k_mipi"
+endchoice
+
+menu "Network Protocol for sending stream"
+
+	config FH_APP_USING_PES
+		bool "Using Pes Pack"
+		default y
+
+	if FH_APP_USING_PES
+		choice
+			prompt "Pes Send Type"
+			default FH_APP_USING_UDP
+
+			config FH_APP_USING_UDP
+			bool "Using UDP"
+
+			config FH_APP_USING_SRT
+			bool "Using SRT"
+		endchoice
+	endif
+
+	config FH_APP_USING_RTSP
+		bool "Using RTSP"
+		default n
+
+	config FH_APP_USING_RAW_STREAM
+		bool "Record Raw Stream"
+		default n
+
+endmenu
+
