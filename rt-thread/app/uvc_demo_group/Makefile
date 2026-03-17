@@ -87,6 +87,11 @@ ifeq ($(CONFIG_FH_APP_OPEN_OVERLAY), y)
     LOCAL_CFLAGS += -Icommon/overlay/
 endif
 
+# Crosshair feature (requires OVERLAY to be enabled)
+ifeq ($(CONFIG_FH_APP_OVERLAY_CROSSHAIR), y)
+    LOCAL_CFLAGS += -DUVC_ENABLE_CROSSHAIR=1
+endif
+
 ifeq ($(CONFIG_FH_APP_OPEN_NN_DETECT), y)
     SAMP_SRCS += $(wildcard common/fh_nn_detect/sample_nna_detect.c)
     LOCAL_CFLAGS += -Icommon/fh_nn_detect/
@@ -163,14 +168,14 @@ LOCAL_LIBS += -lovos02k_mipi_rtt
 LOCAL_LINKFLAGS += -Wl,-u,ovos02k_mipi_sensor_if
 endif
 
+ifeq ($(CONFIG_FH_USING_GC2083_MIPI),y)
+LOCAL_LIBS += -lgc2083_mipi_rtt
+LOCAL_LINKFLAGS += -Wl,-u,gc2083_mipi_sensor_if
+endif
+
 ifeq ($(CONFIG_FH_USING_OVOS02D_MIPI),y)
 LOCAL_LIBS += -lovos02d_mipi_rtt
 LOCAL_LINKFLAGS += -Wl,-u,ovos02d_mipi_sensor_if
-endif
-
-ifeq ($(FH_USING_GC2083_MIPI),1)
-LOCAL_LIBS += -lgc2083_mipi_rtt
-LOCAL_LINKFLAGS += -Wl,-u,gc2083_mipi_sensor_if
 endif
 
 ifeq ($(CONFIG_FH_USING_OVOS08_MIPI),y)

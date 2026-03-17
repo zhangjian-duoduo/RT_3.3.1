@@ -42,14 +42,13 @@ menu "Choose Sensor"
         config FH_USING_OVOS02K_MIPI
             bool "ovos02k_mipi"
             default y
-
+            
+        config FH_USING_GC2083_MIPI
+            bool "gc2083_mipi"
+            default y
+            
         config FH_USING_OVOS02D_MIPI
             bool "ovos02d_mipi"
-            default n
-
-        config FH_USING_GC2083_MIPI
-            depends on CONFIG_ARCH_FH8636_FH8852V20X || CONFIG_CHIP_FH8626V200
-            bool "gc2083_mipi"
             default n
 
         config FH_USING_OVOS04C10_MIPI
@@ -634,6 +633,10 @@ menuconfig FH_APP_OPEN_OVERLAY
         config FH_APP_OVERLAY_TOSD
             bool "Tosd"
             default y
+
+        config FH_APP_OVERLAY_CROSSHAIR
+            bool "Crosshair"
+            default n
     endif
 
 config NN_DRAW_BOX

@@ -14,6 +14,7 @@
 #include "../dsp/chn_rc_type.h"
 #include "../dsp/chn_yuv_type.h"
 #include "overlay/sample_overlay.h"
+#include "uvc_crosshair.h"
 #if defined (NN_ENABLE_G0)
 #include "sample_nna_detect.h"
 #endif
@@ -277,6 +278,9 @@ static int change_video(int id, int s32Format, int s32Width, int s32Height)
       step  14: add overlayer
      ******************************************/
     sample_overlay_start();
+#if defined (FH_APP_OVERLAY_CROSSHAIR)
+    uvc_crosshair_update(s32Width, s32Height);
+#endif
 #endif
         return 0;
     }
@@ -317,6 +321,9 @@ static int change_video(int id, int s32Format, int s32Width, int s32Height)
       step  14: add overlayer
      ******************************************/
     sample_overlay_start();
+#if defined (FH_APP_OVERLAY_CROSSHAIR)
+    uvc_crosshair_update(s32Width, s32Height);
+#endif
 #endif
     return RETURN_OK;
 
@@ -390,6 +397,10 @@ static int fh_stream_init(int s32Format, int s32Width, int s32Height)
       step  14: add overlayer
      ******************************************/
     sample_overlay_start();
+#if defined (FH_APP_OVERLAY_CROSSHAIR)
+    uvc_crosshair_init();
+    uvc_crosshair_update(s32Width, s32Height);
+#endif
 #endif
 #if defined (NN_ENABLE_G0)
     sample_fh_nn_obj_detect_start();
