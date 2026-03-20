@@ -66,6 +66,11 @@ FH_VOID isp_vpu_reconfig(FH_UINT32 grpid)
 
     API_ISP_Pause(grpid);
     API_ISP_Resume(grpid);
+	
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	//API_ISP_SetMirrorAndflip(0, 1, 0);
+		
+#endif
 
     FH_VPSS_GetViAttr(grpid, &vpu_size);
     API_ISP_GetViAttr(grpid, &isp_vi);
@@ -945,6 +950,11 @@ void change_sensor_fps(int fps)
     }
     API_ISP_Resume(FH_GRP_ID);
     g_isp_format = fmt;
+	
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	//API_ISP_SetMirrorAndflip(0, 1, 0);
+		
+#endif
 }
 
 
@@ -979,6 +989,11 @@ FH_VOID ISP_sleep_mode(FH_ISP_SENSOR_PM on)
         sleep_cur = 0;
         FH_VPSS_Enable(FH_GRP_ID, 0);
         API_ISP_Resume(FH_GRP_ID);
+		
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	//API_ISP_SetMirrorAndflip(0, 1, 0);
+		
+#endif
         Sensor_Wakeup();
     }
 }

@@ -45,6 +45,16 @@ FH_SINT32 sample_common_media_sys_init(FH_VOID)
     enc_write_proc("stm_12000000_128");
     jpeg_write_proc("mjpgstm_12000000_32");
 #endif
+
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+    isp_write_proc("sublimit_off");
+    isp_write_proc("cir_on");   
+    vpu_write_proc("sublimit_off");
+    vpu_write_proc("cap_0_2560_1440");
+    vpu_write_proc("buf_0_3");
+    jpeg_write_proc("mjpg_1048576_1048576");
+#endif	
+
     return FH_SYS_Init();
 }
 
@@ -430,9 +440,13 @@ FH_SINT32 sample_common_enc_create_chan(FH_UINT32 grpid, FH_UINT32 chan_enc, str
     FH_VENC_CHN_CAP cfg_vencmem;
 
     cfg_vencmem.support_type = enc_info->enc_type;
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	cfg_vencmem.max_size.u32Width  = 2560;
+	cfg_vencmem.max_size.u32Height = 1440;
+#else
     cfg_vencmem.max_size.u32Width = enc_info->max_width;
     cfg_vencmem.max_size.u32Height = enc_info->max_height;
-
+#endif
     if (enc_info->enc_type == FH_MJPEG)
         return FH_VENC_CreateChn(chan_enc, &cfg_vencmem);
     else

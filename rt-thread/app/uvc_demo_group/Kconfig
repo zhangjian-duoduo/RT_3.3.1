@@ -621,6 +621,16 @@ config FH_APP_THREAD_PRIORITY
     int "App Thread Priority"
     default 130
 
+config RT_USING_HS_CUSTOM
+    bool "Customer version"
+    default n
+
+if RT_USING_HS_CUSTOM
+    config RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+        bool "8852V201 GC2083 DZ 20230619"
+        default n
+endif
+
 menuconfig FH_APP_OPEN_OVERLAY
     bool "Open Overlay"
     default n
@@ -638,6 +648,27 @@ menuconfig FH_APP_OPEN_OVERLAY
             bool "Crosshair"
             default n
     endif
+
+config FH_APP_SEI_TIMESTAMP
+    bool "SEI Timestamp"
+    default n
+    help
+        Enable SEI timestamp for H264/H265 video streams.
+        Adds system uptime (in microseconds) to each video frame.
+
+if FH_APP_SEI_TIMESTAMP
+    config FH_APP_SEI_TIMESTAMP_H264
+        bool "H264 SEI Timestamp"
+        default y
+
+    config FH_APP_SEI_TIMESTAMP_H265
+        bool "H265 SEI Timestamp"
+        default y
+
+    config FH_APP_MJPEG_TIMESTAMP
+        bool "MJPEG Timestamp (via USB payload)"
+        default y
+endif
 
 config NN_DRAW_BOX
     select FH_APP_OPEN_OVERLAY

@@ -79,6 +79,12 @@ endif
 # overlay code for chip before ZT
 ifeq ($(CONFIG_APP_USB_DEVICE_UVC), y)
     SAMP_SRCS += $(wildcard usb_video/*.c)
+    # Exclude SEI timestamp file if feature is disabled
+    ifeq ($(CONFIG_FH_APP_SEI_TIMESTAMP),y)
+        # SEI enabled, compile uvc_sei_timestamp.c
+    else
+        SAMP_SRCS := $(filter-out usb_video/uvc_sei_timestamp.c, $(SAMP_SRCS))
+    endif
     LOCAL_CFLAGS += -Iusb_video/
 endif
 
@@ -90,6 +96,33 @@ endif
 # Crosshair feature (requires OVERLAY to be enabled)
 ifeq ($(CONFIG_FH_APP_OVERLAY_CROSSHAIR), y)
     LOCAL_CFLAGS += -DUVC_ENABLE_CROSSHAIR=1
+endif
+
+# SEI Timestamp feature
+ifeq ($(CONFIG_FH_APP_SEI_TIMESTAMP), y)
+    LOCAL_CFLAGS += -DUVC_ENABLE_SEI_TIMESTAMP=1
+    ifeq ($(CONFIG_FH_APP_SEI_TIMESTAMP_H264), y)
+        LOCAL_CFLAGS += -DUVC_SEI_H264_ENABLED=1
+    else
+        LOCAL_CFLAGS += -DUVC_SEI_H264_ENABLED=0
+    endif
+    ifeq ($(CONFIG_FH_APP_SEI_TIMESTAMP_H265), y)
+        LOCAL_CFLAGS += -DUVC_SEI_H265_ENABLED=1
+    else
+        LOCAL_CFLAGS += -DUVC_SEI_H265_ENABLED=0
+    endif
+    ifeq ($(CONFIG_FH_APP_MJPEG_TIMESTAMP), y)
+        LOCAL_CFLAGS += -DUVC_MJPEG_TIMESTAMP_ENABLED=1
+    else
+        LOCAL_CFLAGS += -DUVC_MJPEG_TIMESTAMP_ENABLED=0
+    endif
+endif
+
+# Customer version
+ifeq ($(CONFIG_RT_USING_HS_CUSTOM),y)
+    ifeq ($(CONFIG_RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619),y)
+        LOCAL_CFLAGS += -DRT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619=1
+    endif
 endif
 
 ifeq ($(CONFIG_FH_APP_OPEN_NN_DETECT), y)

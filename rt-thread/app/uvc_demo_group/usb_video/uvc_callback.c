@@ -75,6 +75,13 @@ void uvc_stream_on(int stream_id)
     ISP_sleep_mode(ISP_SENSOR_WAKEUP);
     pthread_mutex_unlock(&mutex_sensor);
     printf("%s:stream_id %d\n", __func__, stream_id);
+	
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	gpio_request(43); // light on
+	gpio_direction_output(43, 0);
+	gpio_release(43);
+#endif
+
 #ifdef UVC_SUPPORT_WINDOWS_HELLO_FACE
     if (stream_id == STREAM_ID2)
         ir_stream_on = 1;
@@ -89,6 +96,12 @@ void uvc_stream_off(int stream_id)
         ir_stream_on = 0;
 #endif
     printf("%s:stream_id %d\n", __func__, stream_id);
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	gpio_request(43); // light off
+	gpio_direction_output(43, 1);
+	gpio_release(43);
+#endif
+
 }
 
 FH_VOID Uvc_SetAEMode(FH_UINT32 mode)

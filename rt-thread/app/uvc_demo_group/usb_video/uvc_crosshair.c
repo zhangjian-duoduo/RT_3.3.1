@@ -55,7 +55,6 @@ FH_SINT32 uvc_crosshair_init(FH_VOID)
 FH_SINT32 uvc_crosshair_update(FH_SINT32 width, FH_SINT32 height)
 {
     FH_SINT32 ret;
-    FHT_OSD_Gbox_t gbox_h, gbox_v;
     FH_SINT32 center_x, center_y;
     FH_SINT32 line_width = UVC_CROSSHAIR_LINE_WIDTH;
 
@@ -74,53 +73,55 @@ FH_SINT32 uvc_crosshair_update(FH_SINT32 width, FH_SINT32 height)
     center_x = width / 2;
     center_y = height / 2;
 
+    /* Use unitary API to set both lines at once */
+    FHT_OSD_Gbox_t gbox[2];
+    FHT_OSD_Gbox_Unitary_t gbox_layer;
+
     /* Horizontal line - from left edge to right edge, centered vertically */
-    memset(&gbox_h, 0, sizeof(gbox_h));
-    gbox_h.enable = 1;
-    gbox_h.gboxId = CROSSHAIR_H_LINE_ID;
-    gbox_h.rotate = 0;
-    gbox_h.gboxLineWidth = line_width;
-    gbox_h.area.fTopLeftX = 0;
-    gbox_h.area.fTopLeftY = center_y - line_width / 2;
-    gbox_h.area.fWidth = width;
-    gbox_h.area.fHeigh = line_width;
-    gbox_h.osdColor.fRed = UVC_CROSSHAIR_COLOR_R;
-    gbox_h.osdColor.fGreen = UVC_CROSSHAIR_COLOR_G;
-    gbox_h.osdColor.fBlue = UVC_CROSSHAIR_COLOR_B;
-    gbox_h.osdColor.fAlpha = UVC_CROSSHAIR_COLOR_A;
-    gbox_h.max_frame_w = width;
-    gbox_h.max_frame_h = height;
+    memset(&gbox[0], 0, sizeof(FHT_OSD_Gbox_t));
+    gbox[0].enable = 1;
+    gbox[0].gboxId = CROSSHAIR_H_LINE_ID;
+    gbox[0].rotate = 0;
+    gbox[0].gboxLineWidth = line_width;
+    gbox[0].area.fTopLeftX = 0;
+    gbox[0].area.fTopLeftY = center_y - line_width / 2;
+    gbox[0].area.fWidth = width;
+    gbox[0].area.fHeigh = line_width;
+    gbox[0].osdColor.fRed = UVC_CROSSHAIR_COLOR_R;
+    gbox[0].osdColor.fGreen = UVC_CROSSHAIR_COLOR_G;
+    gbox[0].osdColor.fBlue = UVC_CROSSHAIR_COLOR_B;
+    gbox[0].osdColor.fAlpha = UVC_CROSSHAIR_COLOR_A;
+    gbox[0].max_frame_w = width;
+    gbox[0].max_frame_h = height;
 
     /* Vertical line - from top edge to bottom edge, centered horizontally */
-    memset(&gbox_v, 0, sizeof(gbox_v));
-    gbox_v.enable = 1;
-    gbox_v.gboxId = CROSSHAIR_V_LINE_ID;
-    gbox_v.rotate = 0;
-    gbox_v.gboxLineWidth = line_width;
-    gbox_v.area.fTopLeftX = center_x - line_width / 2;
-    gbox_v.area.fTopLeftY = 0;
-    gbox_v.area.fWidth = line_width;
-    gbox_v.area.fHeigh = height;
-    gbox_v.osdColor.fRed = UVC_CROSSHAIR_COLOR_R;
-    gbox_v.osdColor.fGreen = UVC_CROSSHAIR_COLOR_G;
-    gbox_v.osdColor.fBlue = UVC_CROSSHAIR_COLOR_B;
-    gbox_v.osdColor.fAlpha = UVC_CROSSHAIR_COLOR_A;
-    gbox_v.max_frame_w = width;
-    gbox_v.max_frame_h = height;
+    memset(&gbox[1], 0, sizeof(FHT_OSD_Gbox_t));
+    gbox[1].enable = 1;
+    gbox[1].gboxId = CROSSHAIR_V_LINE_ID;
+    gbox[1].rotate = 0;
+    gbox[1].gboxLineWidth = line_width;
+    gbox[1].area.fTopLeftX = center_x - line_width / 2;
+    gbox[1].area.fTopLeftY = 0;
+    gbox[1].area.fWidth = line_width;
+    gbox[1].area.fHeigh = height;
+    gbox[1].osdColor.fRed = UVC_CROSSHAIR_COLOR_R;
+    gbox[1].osdColor.fGreen = UVC_CROSSHAIR_COLOR_G;
+    gbox[1].osdColor.fBlue = UVC_CROSSHAIR_COLOR_B;
+    gbox[1].osdColor.fAlpha = UVC_CROSSHAIR_COLOR_A;
+    gbox[1].max_frame_w = width;
+    gbox[1].max_frame_h = height;
 
-    /* Draw horizontal line */
-    ret = FHAdv_Osd_Ex_SetGbox(CROSSHAIR_VPU_ID, CROSSHAIR_CHN, &gbox_h);
+    /* Draw both lines using unitary API */
+    gbox_layer.nGboxNum = 2;
+    gbox_layer.pGboxcfg = gbox;
+    gbox_layer.nPolygonNum = 0;
+    gbox_layer.pPolygoncfg = NULL;
+    gbox_layer.max_frame_w = width;
+    gbox_layer.max_frame_h = height;
+    ret = FHAdv_Osd_Ex_SetGbox_Unitary(CROSSHAIR_VPU_ID, CROSSHAIR_CHN, &gbox_layer);
     if (ret != FH_SUCCESS)
     {
-        printf("FHAdv_Osd_Ex_SetGbox (h) failed! ret=0x%x\n", ret);
-        return ret;
-    }
-
-    /* Draw vertical line */
-    ret = FHAdv_Osd_Ex_SetGbox(CROSSHAIR_VPU_ID, CROSSHAIR_CHN, &gbox_v);
-    if (ret != FH_SUCCESS)
-    {
-        printf("FHAdv_Osd_Ex_SetGbox (v) failed! ret=0x%x\n", ret);
+        printf("FHAdv_Osd_Ex_SetGbox_Unitary failed! ret=0x%x\n", ret);
         return ret;
     }
 

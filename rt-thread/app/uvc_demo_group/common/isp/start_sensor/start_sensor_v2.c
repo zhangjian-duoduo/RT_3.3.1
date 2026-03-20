@@ -13,6 +13,10 @@ extern struct isp_sensor_if *SENSOR_CREATE_MULTI(ovos02d_mipi)();
 extern struct isp_sensor_if *SENSOR_CREATE_MULTI(ovos02k_mipi)();
 #endif
 
+#if defined (FH_USING_GC2083_MIPI) || defined (FH_USING_GC2083_MIPI)
+extern struct isp_sensor_if *SENSOR_CREATE_MULTI(GC2083_mipi)();
+#endif
+
 #if defined (FH_USING_OVOS04C10_MIPI) || defined (FH_USING_OVOS04C10_MIPI)
 extern struct isp_sensor_if *SENSOR_CREATE_MULTI(ovos04c10_mipi)();
 #endif
@@ -37,9 +41,6 @@ extern struct isp_sensor_if *SENSOR_CREATE_MULTI(ovos08_mipi)();
 extern struct isp_sensor_if *SENSOR_CREATE_MULTI(imx415_mipi)();
 #endif
 
-#if defined(FH_USING_GC2083_MIPI)
-extern struct isp_sensor_if *SENSOR_CREATE_MULTI(gc2083_mipi)();
-#endif
 
 struct isp_sensor_if *start_sensor(char *SensorName, int grpid)
 {
@@ -60,6 +61,14 @@ struct isp_sensor_if *start_sensor(char *SensorName, int grpid)
         sensor = SENSOR_CREATE_MULTI(ovos02k_mipi)();
     }
 #endif
+#if defined (FH_USING_GC2083_MIPI) || defined (FH_USING_GC2083_MIPI)
+    ret = strcmp(SensorName, "gc2083_mipi");
+    if (!ret)
+    {
+        sensor = SENSOR_CREATE_MULTI(gc2083_mipi)();
+    }
+#endif
+
 #if defined (FH_USING_OVOS04C10_MIPI) || defined (FH_USING_OVOS04C10_MIPI)
     ret = strcmp(SensorName, "ovos04c10_mipi");
     if (!ret)
@@ -103,13 +112,6 @@ struct isp_sensor_if *start_sensor(char *SensorName, int grpid)
     if (!ret)
     {
         sensor = SENSOR_CREATE_MULTI(imx415_mipi)();
-    }
-#endif
-
-#if defined(FH_USING_GC2083_MIPI)
-    if (!strcmp(SensorName, "gc2083_mipi"))
-    {
-        sensor = SENSOR_CREATE_MULTI(gc2083_mipi)();
     }
 #endif
 

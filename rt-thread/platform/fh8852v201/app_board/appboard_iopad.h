@@ -16,10 +16,11 @@
 
 char *fh_pinctrl_selected_devices[] = {
     "I2C0", "MIPI", "SADC_XAIN0", "SADC_XAIN1",
-    "SENSOR_CLK", "SSI0_4BIT", "STM0", "STM1",
+    "SENSOR_CLK", "SSI0_4BIT",
     "UART0", "UART1", "USB", "GPIO4", "GPIO13", "GPIO30",
-    "GPIO31", "GPIO32", "GPIO43", "GPIO44",
+    "GPIO31", "GPIO32", "GPIO43", "GPIO44","GPIO22", "GPIO23","GPIO1","GPIO0","GPIO2","GPIO3","GPIO17",
 
+#if 0
 #ifdef WIFI_USING_SDIOWIFI
 #if (WIFI_SDIO == 0)
     "SD0_WIFI", "GPIO17", "GPIO28", "GPIO29"
@@ -28,6 +29,7 @@ char *fh_pinctrl_selected_devices[] = {
 #endif
 #else
     "SD0_NO_WP", "ETH"
+#endif
 #endif
 };
 

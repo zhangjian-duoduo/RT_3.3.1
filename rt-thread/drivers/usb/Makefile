@@ -1,5 +1,8 @@
 include $(SDKROOT)/build/config.mk
 
+# Include app config for driver layer
+-include $(SDKROOT)/app/uvc_demo_group/.config
+
 LIBNAME := $(shell basename `pwd`)
 
 LOCAL_CFLAGS := -I./include/
@@ -62,6 +65,14 @@ ifeq ($(CONFIG_FH_RT_USB_DEVICE),y)
     ifeq ($(CONFIG_FH_RT_USB_DEVICE_UVC),y)
         CSRCS += device/class/f_uvc.c device/class/libuvc_ctrl.c
         CSRCS += device/class/libuvc.c device/class/uvc_init.c device/class/uvc_vs_desc.c
+        # Crosshair feature
+        ifeq ($(CONFIG_FH_APP_OVERLAY_CROSSHAIR),y)
+            LOCAL_CFLAGS += -DUVC_ENABLE_CROSSHAIR=1
+        endif
+        # Customer version
+        ifeq ($(CONFIG_RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619),y)
+            LOCAL_CFLAGS += -DRT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619=1
+        endif
     endif
 
     ifeq ($(CONFIG_FH_RT_USB_DEVICE_UAC),y)

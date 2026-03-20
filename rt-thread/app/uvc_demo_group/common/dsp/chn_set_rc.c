@@ -21,7 +21,12 @@ FH_VOID sample_common_set_h264_rc_fixqp(struct enc_channel_info *info, FH_VENC_C
 FH_VOID sample_common_set_h264_rc_cbr(struct enc_channel_info *info, FH_VENC_CHN_CONFIG *cfg)
 {
     cfg->rc_attr.rc_type                          = FH_RC_H264_CBR;
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	//if((info->width == 1280) && (info->height == 720))
+	cfg->rc_attr.h264_cbr.bitrate				  = 3*1024*1024;
+#else
     cfg->rc_attr.h264_cbr.bitrate                 = info->bps;
+#endif
     cfg->rc_attr.h264_cbr.init_qp                 = 35;
     cfg->rc_attr.h264_cbr.FrameRate.frame_count   = info->frame_count;
     cfg->rc_attr.h264_cbr.FrameRate.frame_time    = info->frame_time;
@@ -174,7 +179,14 @@ FH_VOID sample_common_set_h265_rc_fixqp(struct enc_channel_info *info, FH_VENC_C
 FH_VOID sample_common_set_h265_rc_cbr(struct enc_channel_info *info, FH_VENC_CHN_CONFIG *cfg)
 {
     cfg->rc_attr.rc_type                          = FH_RC_H265_CBR;
-    cfg->rc_attr.h265_cbr.bitrate                 = info->bps;
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	if((info->width == 1280) && (info->height == 720))
+		cfg->rc_attr.h265_cbr.bitrate				  = 3*1024*1024;
+	else
+		cfg->rc_attr.h265_cbr.bitrate				  = info->bps;
+#else
+	cfg->rc_attr.h265_cbr.bitrate				  = info->bps;
+#endif
     cfg->rc_attr.h265_cbr.init_qp                 = 35;
     cfg->rc_attr.h265_cbr.FrameRate.frame_count   = info->frame_count;
     cfg->rc_attr.h265_cbr.FrameRate.frame_time    = info->frame_time;

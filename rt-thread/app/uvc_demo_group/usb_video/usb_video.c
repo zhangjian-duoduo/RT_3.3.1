@@ -12,6 +12,7 @@
 #include "uvc_extern.h"
 #include "uvc_info.h"
 #include "uvc_callback.h"
+#include "uvc_sei_timestamp.h"
 #include "rtconfig_app.h"
 #include <sys/prctl.h>
 
@@ -335,6 +336,14 @@ static int single_stream_proc(struct uvc_dev_app *pDev)
                 }
             }
 
+#if defined(FH_APP_SEI_TIMESTAMP)
+            /* Update SEI timestamp for H264/H265 */
+            if (pformat == V4L2_PIX_FMT_H264 || pformat == V4L2_PIX_FMT_H265)
+            {
+                uvc_sei_timestamp_update(0);
+            }
+#endif
+
             FH_VENC_ReleaseStream(&stream);
         }
     }
@@ -444,13 +453,22 @@ static void *yuv_get_proc(void *arg)
                 }
                 yuv_buf->ysize = width * height;
                 yuv_buf->uvsize = yuv_buf->ysize >> 1;
-
+				//modify zhangj 解决sdk在yuv2预览的时候图像异常的问题。
+#if defined (CONFIG_ARCH_FH8636_FH8852V20X) || defined(CONFIG_CHIP_FH8626V200)
+				if (isp_format == FH_STREAM_YUY2)
+				{
+					fh_dma_memcpy(yuv_buf->ydata, stYuvStream.frm_scan.luma.data.vbase, yuv_buf->ysize);
+					fh_dma_memcpy(yuv_buf->uvdata, stYuvStream.frm_scan.chroma.data.vbase, yuv_buf->uvsize);
+				}
+#else
                 if (isp_format == FH_STREAM_YUY2)
                 {
                     yuv_buf->ysize = width * height * 2;
                     yuv_buf->uvsize = 0;
                     fh_dma_memcpy(yuv_buf->ydata, stYuvStream.frm_yuyv.data.vbase, yuv_buf->ysize);
-                } else
+                }
+#endif				
+				else
                 {
                     fh_dma_memcpy(yuv_buf->ydata, stYuvStream.frm_scan.luma.data.vbase, yuv_buf->ysize);
                     fh_dma_memcpy(yuv_buf->ydata + yuv_buf->ysize, stYuvStream.frm_scan.chroma.data.vbase, yuv_buf->uvsize);

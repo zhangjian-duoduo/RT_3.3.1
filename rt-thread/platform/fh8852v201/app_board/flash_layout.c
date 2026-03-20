@@ -13,12 +13,13 @@
  */
 
 struct _tag_flash_layout_info g_flash_layout_info[MAX_FLASH_PART_NUM] = {
+#if 0
     /* reserved partition, will be ignored */
     {"reservd1",    0x040000, BLOCK_64K, PART_RESERVED},
     /* uboot environment partition, can be reserved. */
     {"u-boot-env",  0x010000, BLOCK_64K, PART_RESERVED},
     /* uboot partition, can be reserved too. */
-    {"u-boot",      0x050000, BLOCK_64K, PART_RESERVED},
+    {"u-boot",      0x060000, BLOCK_64K, PART_RESERVED},
     /* if you use VBUS, this partition MUST be defined */
     {"cp-firmware", 0x060000, BLOCK_64K, PART_ARCFIRM},
     /* application partition to hold firmware */
@@ -29,5 +30,13 @@ struct _tag_flash_layout_info g_flash_layout_info[MAX_FLASH_PART_NUM] = {
     {"user-datum",  0x200000, BLOCK_64K, PART_ROOT | PART_USER},
     {"user-prog",   0x100000, BLOCK_64K, PART_USER},
     /* another reserved partition */
-    {"reservd3",    0x800000, BLOCK_64K, PART_RESERVED},
+    {"reservd3",    0x7F0000, BLOCK_64K, PART_RESERVED},
+#endif
+
+	{"reservd1",	0x020000, BLOCK_64K, PART_RESERVED},
+	{"reservd2",	0x050000, BLOCK_64K, PART_RESERVED},
+	{"cp-firmware", 0x030000, BLOCK_64K, PART_ARCFIRM},
+	{"reservd3",	0x030000, BLOCK_64K, PART_RESERVED},
+	{"application", 0x200000, BLOCK_64K, PART_LAST| PART_APPLICATION},
+
 };

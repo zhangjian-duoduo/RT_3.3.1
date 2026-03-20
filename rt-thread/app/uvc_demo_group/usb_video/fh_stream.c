@@ -15,6 +15,7 @@
 #include "../dsp/chn_yuv_type.h"
 #include "overlay/sample_overlay.h"
 #include "uvc_crosshair.h"
+#include "uvc_sei_timestamp.h"
 #if defined (NN_ENABLE_G0)
 #include "sample_nna_detect.h"
 #endif
@@ -248,7 +249,10 @@ static int change_video(int id, int s32Format, int s32Width, int s32Height)
     }
 
     ClearChnData(stream_type, 0);
-
+	
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+		//API_ISP_SetMirrorAndflip(0, 1, 0);
+#endif
     sample_common_dsp_get_vpu_chn_info(FH_GRP_ID, i, &chn_info);
     if (s32Format == V4L2_PIX_FMT_NV12 || s32Format == V4L2_PIX_FMT_IR)
     {
@@ -271,8 +275,12 @@ static int change_video(int id, int s32Format, int s32Width, int s32Height)
 
     if (s32Format == V4L2_PIX_FMT_NV12 || s32Format == V4L2_PIX_FMT_YUY2 || s32Format == V4L2_PIX_FMT_IR)
     {
-        change_ratio_by_res(i, s32Width, s32Height);
+        //change_ratio_by_res(i, s32Width, s32Height);
         change_scaler_by_res(i, s32Width, s32Height);
+		
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+	//API_ISP_SetMirrorAndflip(0, 1, 0);
+#endif
 #ifdef FH_APP_OPEN_OVERLAY
     /******************************************
       step  14: add overlayer
@@ -294,7 +302,7 @@ static int change_video(int id, int s32Format, int s32Width, int s32Height)
             goto test_exit;
         }
     }
-    change_ratio_by_res(i, s32Width, s32Height);
+    //change_ratio_by_res(i, s32Width, s32Height);
 
     ret = sample_common_enc_set_chan(FH_GRP_ID, i, &enc_info);
     if (ret != RETURN_OK)
@@ -380,6 +388,10 @@ static int fh_stream_init(int s32Format, int s32Width, int s32Height)
     {
         goto err_exit;
     }
+	
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619
+		//API_ISP_SetMirrorAndflip(0, 1, 0);	
+#endif
     /************************************************
         step  10: start bind
     ************************************************/
@@ -401,6 +413,9 @@ static int fh_stream_init(int s32Format, int s32Width, int s32Height)
     uvc_crosshair_init();
     uvc_crosshair_update(s32Width, s32Height);
 #endif
+#endif
+#if defined (FH_APP_SEI_TIMESTAMP)
+    uvc_sei_timestamp_init();
 #endif
 #if defined (NN_ENABLE_G0)
     sample_fh_nn_obj_detect_start();
@@ -451,8 +466,8 @@ void set_stream_probe(int stream_id, int fmt, int w, int h, int fps)
     {
         if ((fmt == V4L2_PIX_FMT_NV12 || fmt == V4L2_PIX_FMT_YUY2) && fps < 25)
             fps = 25;
-        if (stream_id == STREAM_ID1)
-            change_sensor_fps(fps);
+        //if (stream_id == STREAM_ID1)
+            //change_sensor_fps(fps);
     }
 }
 

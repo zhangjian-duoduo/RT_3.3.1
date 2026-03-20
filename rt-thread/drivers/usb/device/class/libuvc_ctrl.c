@@ -743,6 +743,26 @@ static void pu_hue_data(struct uvc_request_data *r)
     }
 }
 
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619 //defined(RT_USING_IR_CUT_WITH_LIGHT_RESIS) || defined(FH_USE_IRCUT_CONTROL)
+uint8_t g_ir_cut_night_mode = 0;
+void ir_cut_set_saturation(int mode)
+{
+    unsigned char val;
+
+    if (mode)
+    {
+        val = 128; //get_relative_val(UVC_PU_SATURATION_CONTROL, 10, 200);
+        g_ir_cut_night_mode = 0;
+    }
+    else
+    {
+       g_ir_cut_night_mode = 1;
+        val = 0;
+    }
+    FHAdv_Isp_SetSaturation(0, 1, val);    
+}
+#endif
+
 static void pu_saturation_setup(struct uvc_request_data *r)
 {
     r->data[0] = (uvc_control_pu[UVC_PU_SATURATION_CONTROL].val.cur) & 0xff;

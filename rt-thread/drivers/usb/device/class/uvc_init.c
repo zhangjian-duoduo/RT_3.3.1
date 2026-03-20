@@ -710,6 +710,120 @@ void uvc_sem_release(int stream_id)
     rt_sem_release(stream_info[stream_id]->uvc_format_sem);
 }
 
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619 //0  //def FH_USE_IRCUT_CONTROL
+static int uvc_ir_cut_proc()
+{
+	int status;
+#if defined RT_USING_SWS_CUSTOM_8852_GC2093_200W_VGA_DOUBLE    
+	rt_uint32_t gpio_ir_cut_ctl = 1;
+	rt_uint32_t gpio_ir_cut_off = 0;
+	rt_uint32_t gpio_ir_cut_on = 2;
+#else    
+	rt_uint32_t gpio_ir_cut_on = 23;
+	rt_uint32_t gpio_ir_cut_off = 22;
+	rt_uint32_t gpio_ir_cut_ctl = 1;
+#endif    
+	int ir_cut_status = 0xff;
+	int ir_cut_night_cnt = 0;
+	int ir_cut_day_cnt = 0;
+	rt_uint32_t ir_delay_cnt = 10;
+
+	int irc_control_status = 0;
+
+	
+
+	status = gpio_request(gpio_ir_cut_on);	
+	if (status < 0)
+	{
+		rt_kprintf("ERROR can not open GPIO %d\n", gpio_ir_cut_on);
+	}
+	
+	status = gpio_request(gpio_ir_cut_off);  
+	if (status < 0)
+	{
+		rt_kprintf("ERROR can not open GPIO %d\n", gpio_ir_cut_off);
+	}	 
+	
+	status = gpio_request(gpio_ir_cut_ctl);  
+	if (status < 0)
+	{
+		rt_kprintf("ERROR can not open GPIO %d\n", gpio_ir_cut_ctl);
+	}
+
+	//gpio_direction_output(gpio_ir_cut_on, 0);
+	//gpio_direction_output(gpio_ir_cut_off, 1);
+	gpio_direction_input(gpio_ir_cut_ctl);
+	gpio_direction_input(gpio_ir_cut_on);
+	gpio_direction_input(gpio_ir_cut_off);	
+
+	while (1)
+	{
+		irc_control_status = gpio_get_value(gpio_ir_cut_ctl);
+		if (0 == irc_control_status) // night
+		{
+			ir_cut_day_cnt = 0;
+			ir_cut_night_cnt++;
+			if (ir_cut_night_cnt < ir_delay_cnt)
+			{
+				rt_thread_delay(20);
+				continue;
+			}
+			
+			if (ir_cut_status != 0)
+			{
+				msleep(2000);
+				gpio_direction_output(gpio_ir_cut_on, 1);
+				gpio_direction_output(gpio_ir_cut_off, 0);
+				rt_thread_delay(20);
+				gpio_direction_input(gpio_ir_cut_on);
+            #ifndef RT_USING_SWS_CUSTOM_8852_GC2093_200W_VGA_DOUBLE
+				gpio_direction_input(gpio_ir_cut_off);	
+            #endif
+				
+				//gpio_set_value(gpio_ir_cut_led, 1);
+				rt_kprintf("switch to night mode %d\n", irc_control_status);
+				ir_cut_set_saturation(0);
+				ir_cut_status = 0;				  
+			}
+		}
+		else // day
+		{
+			ir_cut_night_cnt = 0;
+			ir_cut_day_cnt++;
+			if (ir_cut_day_cnt < ir_delay_cnt)
+			{
+				rt_thread_delay(20);
+				continue;
+			}
+
+			if (ir_cut_status != 1)
+			{
+				//gpio_set_value(gpio_ir_cut_on, 0);
+				//gpio_set_value(gpio_ir_cut_off, 1);
+				
+				msleep(2000);
+				gpio_direction_output(gpio_ir_cut_on, 0);
+				gpio_direction_output(gpio_ir_cut_off, 1);
+				rt_thread_delay(10);
+				gpio_direction_input(gpio_ir_cut_on);
+            #ifndef RT_USING_SWS_CUSTOM_8852_GC2093_200W_VGA_DOUBLE
+				gpio_direction_input(gpio_ir_cut_off);	
+            #endif
+				
+				//gpio_set_value(gpio_ir_cut_led, 0);
+				rt_kprintf("switch to day mode %d\n", irc_control_status);
+				ir_cut_set_saturation(1);
+				ir_cut_status = 1;
+			}
+		}		 
+		
+		rt_thread_delay(20);
+	}
+	return RT_EOK;
+}
+
+#endif 
+
 void fh_uvc_init(int stream_id, struct uvc_format_info *fmt, int fmt_num)
 {
     uvc_driver_buf_init(stream_id);
@@ -750,6 +864,12 @@ void fh_uvc_init(int stream_id, struct uvc_format_info *fmt, int fmt_num)
                 (void *)&stream_id, 8 * 1024, 29, 1);
         rt_thread_startup(g_uvc_driver_thread[stream_id]);
     }
+#endif
+#if defined RT_USING_HS_CUSTOM_8852V201_GC2083_DZ_20230619 //0  //def FH_USE_IRCUT_CONTROL
+	rt_thread_t thread_user_func;
+	thread_user_func = rt_thread_create("IR_CUT_proc", uvc_ir_cut_proc, RT_NULL, 10 * 1024, 80, 20);
+	rt_thread_startup(thread_user_func);
+
 #endif
 
 #ifndef UVC_DOUBLE_STREAM
